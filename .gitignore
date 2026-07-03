@@ -1,0 +1,33 @@
+# Dependencias
+node_modules/
+
+# Variables de entorno (nunca versionar secretos)
+.env
+.env.local
+.env.production
+
+# Builds
+dist/
+build/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Sistema operativo / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Cobertura de pruebas
+coverage/
+
+# ---- Claude Code --------------------------------------------
+.claude/
+CLAUDE.md
+
+
+database/
+schema.sql
+seed.sql
