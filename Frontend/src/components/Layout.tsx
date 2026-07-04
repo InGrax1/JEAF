@@ -17,6 +17,7 @@ export default function Layout() {
   const enlaces = [
     { a: '/', texto: 'Dashboard', visible: true },
     { a: '/transacciones', texto: 'Transacciones', visible: true },
+    { a: '/reportes', texto: 'Reportes', visible: true },
     { a: '/categorias', texto: 'Categorías', visible: esAdmin },
     { a: '/usuarios', texto: 'Usuarios', visible: esAdmin },
     { a: '/api-keys', texto: 'API Keys', visible: esAdmin },

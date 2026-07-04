@@ -28,7 +28,7 @@ JEAF/
 | FASE 0 | Arquitectura y Base de Datos | ✅ Completada |
 | FASE 1 | Motor de Transacciones e iOS | ✅ Completada |
 | FASE 2 | Panel Administrativo Web | ✅ Completada |
-| FASE 3 | Cierres y Reportes Legales | ⏳ Pendiente |
+| FASE 3 | Cierres y Reportes Legales | ✅ Completada |
 | FASE 4 | QA, Despliegue y Producción | ⏳ Pendiente |
 
 ## Backend — arranque rápido

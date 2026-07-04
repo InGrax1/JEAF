@@ -83,6 +83,12 @@ const listarCategoriasQuerySchema = Joi.object({
   soloActivas: Joi.boolean().default(false),
 }).unknown(false);
 
+const reporteMensualQuerySchema = Joi.object({
+  anio: Joi.number().integer().min(2000).max(2100).required(),
+  mes: Joi.number().integer().min(1).max(12).required(),
+  formato: Joi.string().valid('pdf', 'xlsx').default('pdf'),
+}).unknown(false);
+
 module.exports = {
   loginSchema,
   refreshSchema,
@@ -97,4 +103,5 @@ module.exports = {
   crearCategoriaSchema,
   actualizarCategoriaSchema,
   listarCategoriasQuerySchema,
+  reporteMensualQuerySchema,
 };

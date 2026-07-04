@@ -83,3 +83,36 @@ export async function api<T>(path: string, options: RequestInit = {}, reintento 
 
   return json.data as T;
 }
+
+/**
+ * Descarga un archivo autenticado (reportes PDF/Excel) y dispara el guardado
+ * en el navegador respetando el nombre sugerido por el servidor.
+ */
+export async function apiDescargar(path: string, reintento = false): Promise<void> {
+  const { accessToken } = getTokens();
+  const res = await fetch(`${API_URL}${path}`, {
+    headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
+  });
+
+  if (!res.ok) {
+    const json = await res.json().catch(() => null);
+    const code = json?.error?.code ?? 'UNKNOWN';
+    if (res.status === 401 && code === 'TOKEN_EXPIRED' && !reintento) {
+      const renovado = await intentarRefresh();
+      if (renovado) return apiDescargar(path, true);
+    }
+    throw new ApiError(json?.error?.message ?? 'No se pudo descargar el archivo', code, res.status);
+  }
+
+  const disposicion = res.headers.get('Content-Disposition') ?? '';
+  const nombre = /filename="?([^";]+)"?/.exec(disposicion)?.[1] ?? 'reporte';
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const enlace = document.createElement('a');
+  enlace.href = url;
+  enlace.download = nombre;
+  document.body.appendChild(enlace);
+  enlace.click();
+  enlace.remove();
+  URL.revokeObjectURL(url);
+}

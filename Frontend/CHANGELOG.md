@@ -9,10 +9,19 @@ Versionado alineado a las fases de desarrollo de la especificación JEAF v1.2.
 ## [No publicado]
 
 ### Pendiente
-- FASE 3 — Cierres y Reportes: descarga de reportes mensuales PDF/Excel desde el panel.
 - FASE 4 — QA, build de producción y despliegue (Vercel).
 
 ---
+
+## [0.2.0] — 2026-07-04 — FASE 3: Cierres y Reportes
+
+### Agregado
+- **Página Reportes** (`/reportes`, visible para Tesorero y Auditor): selector de mes y botones de descarga del cierre mensual en PDF (formato formal para firma física) y Excel (cruce contable), con indicador de progreso y confirmación.
+- **`apiDescargar`** en `src/lib/api.ts`: descarga autenticada de archivos binarios respetando el nombre sugerido por el servidor (`Content-Disposition`), con renovación de token ante expiración.
+- Enlace "Reportes" en la barra lateral.
+
+### Verificado
+- Descarga del PDF desde el panel contra el backend real (200 OK) y build de producción sin errores.
 
 ## [0.1.0] — 2026-07-03 — FASE 2: Panel Administrativo Web
 

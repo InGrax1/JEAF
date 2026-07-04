@@ -9,10 +9,25 @@ Versionado alineado a las fases de desarrollo de la especificación JEAF v1.2.
 ## [No publicado]
 
 ### Pendiente
-- FASE 3 — Cierres y Reportes: generación de PDF/Excel mensuales, endpoints de reportes y balances.
-- FASE 4 — QA (pruebas de integración contra MySQL real), entornos (dev/staging/prod), CI/CD con GitHub Actions, backups.
+- FASE 4 — QA (pruebas de integración contra MySQL real), entornos (dev/staging/prod), CI/CD con GitHub Actions, backups, Swagger/OpenAPI en `/api/docs`, colección Postman.
 
 ---
+
+## [0.4.0] — 2026-07-04 — FASE 3: Cierres y Reportes Legales
+
+### Agregado
+- **`GET /api/v1/reportes/mensual?anio&mes&formato=pdf|xlsx`** (Tesorero y Auditor): reporte de cierre mensual como descarga (`Content-Disposition: attachment`, nombre `JEAF_Reporte_AAAA-MM.*`).
+- **Generador PDF** (`utils/reportePdf.js`, pdfkit): formato formal carta con encabezado institucional (logotipo opcional en `Backend/assets/logo.png`), resumen del mes, desglose por categoría, detalle de movimientos con folio/conciliación, anexo de cancelados con motivo, **espacio en blanco reservado para firma física** (Tesorero y Pastor/Auditor — sin firma electrónica, spec 3.2) y pie con numeración de páginas.
+- **Generador Excel** (`utils/reporteExcel.js`, exceljs): hojas `Resumen`, `Detalle` (con autofiltro, panel congelado, montos con signo para cruce contable) y `Cancelados`.
+- **`utils/fechas.js`**: límites de mes calculados en la zona horaria local de la iglesia (`LOCAL_TIMEZONE`) y convertidos a UTC para las consultas; formato de fechas local centralizado en backend (spec 6.1).
+- Variable `IGLESIA_NOMBRE` para el encabezado de los reportes.
+- Capa `reportes.repository` / `reportes.service`: cifras oficiales solo de transacciones activas; las canceladas se listan como anexo de auditoría sin sumar.
+
+### Corregido
+- El pie de página del PDF ya no genera una hoja en blanco adicional (PDFKit agregaba página al escribir dentro del margen inferior).
+
+### Verificado (E2E, 2026-07-04)
+- PDF y Excel generados contra MySQL real en ~60 ms y ~47 ms (KPI < 3 s ✓); totales cuadrados ($4,530.50 − $670.75 = $3,859.75); Excel releído y validado (3 hojas); descarga desde el panel web con CORS correcto; mes inválido → 400.
 
 ## [0.3.0] — 2026-07-03 — FASE 2: soporte del Panel Web
 

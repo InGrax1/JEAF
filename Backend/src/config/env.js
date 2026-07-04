@@ -26,4 +26,5 @@ module.exports = {
   },
   bcryptSaltRounds: parseInt(process.env.BCRYPT_SALT_ROUNDS, 10) || 12,
   localTimezone: process.env.LOCAL_TIMEZONE || 'America/Mexico_City',
+  iglesiaNombre: process.env.IGLESIA_NOMBRE || 'JEAF — Gestión Financiera',
 };

@@ -4,6 +4,7 @@ import Layout from './components/Layout';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import TransaccionesPage from './pages/TransaccionesPage';
+import ReportesPage from './pages/ReportesPage';
 import CategoriasPage from './pages/CategoriasPage';
 import UsuariosPage from './pages/UsuariosPage';
 import ApiKeysPage from './pages/ApiKeysPage';
@@ -32,6 +33,7 @@ export default function App() {
       >
         <Route path="/" element={<DashboardPage />} />
         <Route path="/transacciones" element={<TransaccionesPage />} />
+        <Route path="/reportes" element={<ReportesPage />} />
         <Route
           path="/categorias"
           element={
