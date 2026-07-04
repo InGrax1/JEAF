@@ -2,6 +2,8 @@ const { defineConfig } = require('vitest/config');
 
 module.exports = defineConfig({
   test: {
+    // Las de integración corren aparte: npm run test:int (vitest.config.integration.js)
+    exclude: ['tests/integration/**', 'node_modules/**'],
     // Variables mínimas para que config/env.js no falle en pruebas unitarias.
     // Las pruebas de integración contra MySQL real llegarán en FASE 4.
     env: {

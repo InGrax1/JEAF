@@ -1,0 +1,266 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "JEAF API",
+    "description": "API REST de la Plataforma de Gestión Financiera y Contable para Iglesias. Autenticación dual: JWT (panel web) y API Keys estáticas (Atajos de iOS). Documenta la estructura exacta que el iPhone debe enviar al servidor.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    { "url": "http://localhost:3000/api/v1", "description": "Desarrollo local" },
+    { "url": "https://TU-BACKEND.onrender.com/api/v1", "description": "Producción (Render)" }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": { "type": "http", "scheme": "bearer", "bearerFormat": "JWT", "description": "Access token del panel web (expira en 1 h)" },
+      "apiKeyAuth": { "type": "apiKey", "in": "header", "name": "X-Api-Key", "description": "API Key del Atajo de iOS (prefijo jeaf_)" }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "ok": { "type": "boolean", "example": false },
+          "error": {
+            "type": "object",
+            "properties": { "code": { "type": "string" }, "message": { "type": "string" } }
+          }
+        }
+      },
+      "Transaccion": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "tipo": { "type": "string", "enum": ["ingreso", "egreso"] },
+          "monto": { "type": "string", "example": "1500.50", "description": "DECIMAL(12,2) como string para no perder precisión" },
+          "categoria_id": { "type": "string", "format": "uuid" },
+          "categoria": { "type": "string" },
+          "usuario_id": { "type": "string", "format": "uuid" },
+          "capturista": { "type": "string" },
+          "notas": { "type": "string", "nullable": true },
+          "estado": { "type": "string", "enum": ["activa", "cancelada"] },
+          "motivo_cancelacion": { "type": "string", "nullable": true },
+          "conciliada": { "type": "integer", "enum": [0, 1] },
+          "idempotency_key": { "type": "string" },
+          "origen": { "type": "string", "enum": ["ios_shortcut", "panel_web"] },
+          "fecha_transaccion": { "type": "string", "format": "date-time", "description": "UTC" }
+        }
+      },
+      "CrearTransaccion": {
+        "type": "object",
+        "required": ["tipo", "monto", "categoriaId", "idempotencyKey"],
+        "properties": {
+          "tipo": { "type": "string", "enum": ["ingreso", "egreso"] },
+          "monto": { "type": "number", "exclusiveMinimum": 0, "maximum": 9999999999.99, "example": 150.5 },
+          "categoriaId": { "type": "string", "format": "uuid" },
+          "notas": { "type": "string", "maxLength": 500, "nullable": true },
+          "idempotencyKey": { "type": "string", "minLength": 8, "maxLength": 191, "description": "Generada por el Atajo: API key + timestamp ms + aleatorio. Si se repite, el servidor devuelve la transacción existente sin duplicar." }
+        }
+      },
+      "Categoria": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "nombre": { "type": "string" },
+          "tipo": { "type": "string", "enum": ["ingreso", "egreso"] },
+          "activo": { "type": "integer", "enum": [0, 1] }
+        }
+      },
+      "Usuario": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "nombre": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "rol": { "type": "string", "enum": ["super_admin", "auditor", "capturista"] },
+          "activo": { "type": "integer", "enum": [0, 1] }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": ["Sistema"],
+        "summary": "Health check (uptime monitoring)",
+        "responses": { "200": { "description": "API operativa" } }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": ["Autenticación"],
+        "summary": "Login del panel web (JWT)",
+        "description": "Rate limit: 5 intentos por IP cada 15 minutos.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": { "email": { "type": "string" }, "password": { "type": "string", "minLength": 8 } }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "accessToken (1 h), refreshToken (7 d) y datos del usuario" },
+          "401": { "description": "Credenciales inválidas", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+          "429": { "description": "Rate limit alcanzado" }
+        }
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "tags": ["Autenticación"],
+        "summary": "Renovar tokens con el refresh token",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "type": "object", "required": ["refreshToken"], "properties": { "refreshToken": { "type": "string" } } } } }
+        },
+        "responses": { "200": { "description": "Nuevos tokens" }, "401": { "description": "Refresh token inválido o expirado" } }
+      }
+    },
+    "/transacciones": {
+      "post": {
+        "tags": ["Transacciones"],
+        "summary": "Registrar ingreso o egreso (Atajos iOS / panel web)",
+        "description": "ESTA es la estructura exacta que el iPhone envía. Idempotente por idempotencyKey. Rate limit: 30 peticiones/minuto por API key.",
+        "security": [{ "apiKeyAuth": [] }, { "bearerAuth": [] }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CrearTransaccion" } } } },
+        "responses": {
+          "201": { "description": "Creada. data.folio = últimos 6 chars del UUID; mensaje listo para la notificación local del Atajo." },
+          "200": { "description": "Reintento idempotente: data.duplicada=true con la transacción original, sin duplicar." },
+          "400": { "description": "Monto no positivo, categoría inexistente/desactivada o tipo incoherente" },
+          "401": { "description": "API Key inválida o revocada / JWT inválido" },
+          "429": { "description": "Rate limit por API key alcanzado" }
+        }
+      },
+      "get": {
+        "tags": ["Transacciones"],
+        "summary": "Listar el libro mayor (paginado y filtrable)",
+        "security": [{ "bearerAuth": [] }],
+        "description": "Solo Tesorero (super_admin) y Auditor.",
+        "parameters": [
+          { "name": "fechaDesde", "in": "query", "schema": { "type": "string", "format": "date-time" } },
+          { "name": "fechaHasta", "in": "query", "schema": { "type": "string", "format": "date-time" } },
+          { "name": "categoriaId", "in": "query", "schema": { "type": "string", "format": "uuid" } },
+          { "name": "tipo", "in": "query", "schema": { "type": "string", "enum": ["ingreso", "egreso"] } },
+          { "name": "usuarioId", "in": "query", "schema": { "type": "string", "format": "uuid" } },
+          { "name": "estado", "in": "query", "schema": { "type": "string", "enum": ["activa", "cancelada"] } },
+          { "name": "conciliada", "in": "query", "schema": { "type": "boolean" } },
+          { "name": "page", "in": "query", "schema": { "type": "integer", "minimum": 1, "default": 1 } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "minimum": 1, "maximum": 100, "default": 20 } }
+        ],
+        "responses": { "200": { "description": "items, total, page, limit" }, "403": { "description": "Rol sin permiso" } }
+      }
+    },
+    "/transacciones/{id}": {
+      "get": {
+        "tags": ["Transacciones"],
+        "summary": "Detalle de una transacción",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+        "responses": { "200": { "description": "Transacción", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Transaccion" } } } }, "404": { "description": "No encontrada" } }
+      }
+    },
+    "/transacciones/{id}/cancelar": {
+      "post": {
+        "tags": ["Transacciones"],
+        "summary": "Cancelar (regla de inmutabilidad: nunca DELETE)",
+        "description": "Solo Tesorero. Cambia estado a 'cancelada' con motivo obligatorio y deleted_at; la fila y su rastro de auditoría se conservan.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["motivo"], "properties": { "motivo": { "type": "string", "minLength": 5, "maxLength": 255 } } } } } },
+        "responses": { "200": { "description": "Cancelada" }, "409": { "description": "Ya estaba cancelada" } }
+      }
+    },
+    "/transacciones/{id}/conciliar": {
+      "post": {
+        "tags": ["Transacciones"],
+        "summary": "Marcar/desmarcar 'Conciliado en banco'",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["conciliada"], "properties": { "conciliada": { "type": "boolean" } } } } } },
+        "responses": { "200": { "description": "Actualizada" }, "409": { "description": "No se concilia una cancelada" } }
+      }
+    },
+    "/categorias": {
+      "get": {
+        "tags": ["Categorías"],
+        "summary": "Listar categorías (el Atajo arma su menú con ?soloActivas=true)",
+        "security": [{ "apiKeyAuth": [] }, { "bearerAuth": [] }],
+        "parameters": [{ "name": "soloActivas", "in": "query", "schema": { "type": "boolean", "default": false } }],
+        "responses": { "200": { "description": "Lista de categorías", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Categoria" } } } } } }
+      },
+      "post": {
+        "tags": ["Categorías"],
+        "summary": "Crear categoría (solo Tesorero)",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["nombre", "tipo"], "properties": { "nombre": { "type": "string" }, "tipo": { "type": "string", "enum": ["ingreso", "egreso"] } } } } } },
+        "responses": { "201": { "description": "Creada" }, "409": { "description": "Nombre duplicado" } }
+      }
+    },
+    "/categorias/{id}": {
+      "put": {
+        "tags": ["Categorías"],
+        "summary": "Editar/activar/desactivar categoría (solo Tesorero)",
+        "description": "El tipo no puede cambiar si la categoría ya tiene transacciones históricas.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "properties": { "nombre": { "type": "string" }, "tipo": { "type": "string", "enum": ["ingreso", "egreso"] }, "activo": { "type": "boolean" } } } } } },
+        "responses": { "200": { "description": "Actualizada" }, "409": { "description": "Nombre duplicado o categoría en uso" } }
+      }
+    },
+    "/usuarios": {
+      "get": { "tags": ["Usuarios"], "summary": "Listar usuarios (solo Tesorero)", "security": [{ "bearerAuth": [] }], "responses": { "200": { "description": "Lista", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Usuario" } } } } } } },
+      "post": {
+        "tags": ["Usuarios"],
+        "summary": "Crear usuario con rol único (solo Tesorero)",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["nombre", "email", "password", "rol"], "properties": { "nombre": { "type": "string" }, "email": { "type": "string" }, "password": { "type": "string", "minLength": 8 }, "rol": { "type": "string", "enum": ["super_admin", "auditor", "capturista"] } } } } } },
+        "responses": { "201": { "description": "Creado" }, "409": { "description": "Email ya registrado" } }
+      }
+    },
+    "/usuarios/{id}": {
+      "get": { "tags": ["Usuarios"], "summary": "Detalle de usuario", "security": [{ "bearerAuth": [] }], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }], "responses": { "200": { "description": "Usuario" }, "404": { "description": "No encontrado" } } },
+      "put": { "tags": ["Usuarios"], "summary": "Editar usuario (nombre, email, password, rol, activo)", "security": [{ "bearerAuth": [] }], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }], "responses": { "200": { "description": "Actualizado" } } },
+      "delete": { "tags": ["Usuarios"], "summary": "Baja lógica (soft delete)", "security": [{ "bearerAuth": [] }], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }], "responses": { "200": { "description": "Eliminado (lógico)" }, "400": { "description": "No puedes eliminarte a ti mismo" } } }
+    },
+    "/api-keys": {
+      "get": { "tags": ["API Keys"], "summary": "Listar API Keys con último uso (solo Tesorero)", "security": [{ "bearerAuth": [] }], "responses": { "200": { "description": "Lista (solo prefijos, nunca la key)" } } },
+      "post": {
+        "tags": ["API Keys"],
+        "summary": "Generar API Key para un capturista (solo Tesorero)",
+        "description": "La key en claro se devuelve ÚNICAMENTE en esta respuesta; solo se persiste su hash SHA-256.",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["usuarioId", "etiqueta"], "properties": { "usuarioId": { "type": "string", "format": "uuid" }, "etiqueta": { "type": "string", "example": "iPhone de Juan" } } } } } },
+        "responses": { "201": { "description": "data.apiKey visible una sola vez" } }
+      }
+    },
+    "/api-keys/{id}/revocar": {
+      "post": { "tags": ["API Keys"], "summary": "Revocar con efecto inmediato (solo Tesorero)", "security": [{ "bearerAuth": [] }], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }], "responses": { "200": { "description": "Revocada" }, "409": { "description": "Ya estaba revocada" } } }
+    },
+    "/dashboard/resumen": {
+      "get": {
+        "tags": ["Dashboard"],
+        "summary": "Cifras del dashboard (Tesorero y Auditor)",
+        "description": "Balance total, mes/año en curso, serie mensual de 12 meses y desglose por categoría. Excluye canceladas.",
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Resumen financiero" } }
+      }
+    },
+    "/reportes/mensual": {
+      "get": {
+        "tags": ["Reportes"],
+        "summary": "Cierre mensual en PDF o Excel (Tesorero y Auditor)",
+        "description": "PDF: formato formal con espacio para firma física. Excel: hojas Resumen/Detalle/Cancelados para cruce contable.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "anio", "in": "query", "required": true, "schema": { "type": "integer", "minimum": 2000, "maximum": 2100 } },
+          { "name": "mes", "in": "query", "required": true, "schema": { "type": "integer", "minimum": 1, "maximum": 12 } },
+          { "name": "formato", "in": "query", "schema": { "type": "string", "enum": ["pdf", "xlsx"], "default": "pdf" } }
+        ],
+        "responses": { "200": { "description": "Archivo binario como attachment" }, "400": { "description": "Parámetros inválidos" } }
+      }
+    }
+  }
+}

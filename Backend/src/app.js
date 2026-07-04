@@ -2,8 +2,10 @@
 const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
+const swaggerUi = require('swagger-ui-express');
 const env = require('./config/env');
 const apiRoutes = require('./routes');
+const openapi = require('../docs/openapi.json');
 const { errorHandler, notFoundHandler } = require('./middlewares/errorHandler');
 
 const app = express();
@@ -23,6 +25,10 @@ app.use(
 );
 
 app.use(express.json({ limit: '100kb' }));
+
+// Documentación técnica autogenerada (spec 9.1): estructura exacta que el
+// iPhone debe enviar al servidor
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openapi, { customSiteTitle: 'JEAF API — Documentación' }));
 
 app.use('/api/v1', apiRoutes);
 

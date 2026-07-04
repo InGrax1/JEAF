@@ -9,9 +9,21 @@ Versionado alineado a las fases de desarrollo de la especificación JEAF v1.2.
 ## [No publicado]
 
 ### Pendiente
-- FASE 4 — QA (pruebas de integración contra MySQL real), entornos (dev/staging/prod), CI/CD con GitHub Actions, backups, Swagger/OpenAPI en `/api/docs`, colección Postman.
+- UAT con el tesorero real y despliegue efectivo a Render/Vercel/Aiven (requiere cuentas y credenciales — ver `docs/Despliegue.md`).
 
 ---
+
+## [0.5.0] — 2026-07-04 — FASE 4: QA, Despliegue y Puesta en Producción
+
+### Agregado
+- **Pruebas de integración** (`tests/integration/repositories.int.test.js`, spec 10.6): 10 pruebas de la capa `repositories/` contra una base MySQL **real** (`jeaf_test`, creada desde `schema.sql` y eliminada al final) — índice único de idempotencia, `CHECK` de montos a nivel BD, cancelación sin DELETE, soft delete de usuarios, conciliación, filtros/paginación, API keys por hash y logs JSON. Scripts: `npm run test:int` y `npm run test:all`.
+- **Swagger/OpenAPI en `/api/docs`** (spec 9.1): especificación completa de la API (`docs/openapi.json`) servida con swagger-ui-express; documenta la estructura exacta que el iPhone envía, los esquemas de seguridad (JWT y X-Api-Key) y todos los endpoints.
+- **CI/CD con GitHub Actions** (`.github/workflows/ci.yml`): pruebas unitarias + integración (MySQL 8 como service container) + build del frontend en cada push/PR a `main`/`develop`; deploy automático a staging (Render deploy hook) al merge a `develop`; deploy a producción solo por tag `v*`.
+- **Backup diario** (`scripts/backup_mysql.sh`, spec 10.7): mysqldump comprimido con retención de 30 días, listo para cron; complementa el point-in-time recovery de Aiven.
+
+### Verificado
+- 19/19 pruebas en verde (9 unitarias + 10 integración contra MySQL real local).
+- `/api/docs` responde 200 con la especificación cargada.
 
 ## [0.4.0] — 2026-07-04 — FASE 3: Cierres y Reportes Legales
 

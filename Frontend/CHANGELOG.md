@@ -9,9 +9,15 @@ Versionado alineado a las fases de desarrollo de la especificación JEAF v1.2.
 ## [No publicado]
 
 ### Pendiente
-- FASE 4 — QA, build de producción y despliegue (Vercel).
+- Despliegue efectivo a Vercel (requiere cuenta — ver `docs/Despliegue.md`).
 
 ---
+
+## [0.2.1] — 2026-07-04 — FASE 4: preparación para despliegue
+
+### Agregado
+- `vercel.json` con rewrites de SPA (todas las rutas sirven `index.html` para que React Router funcione en producción).
+- Build del frontend integrado al pipeline de CI (GitHub Actions).
 
 ## [0.2.0] — 2026-07-04 — FASE 3: Cierres y Reportes
 

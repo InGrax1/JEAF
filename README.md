@@ -29,7 +29,7 @@ JEAF/
 | FASE 1 | Motor de Transacciones e iOS | ✅ Completada |
 | FASE 2 | Panel Administrativo Web | ✅ Completada |
 | FASE 3 | Cierres y Reportes Legales | ✅ Completada |
-| FASE 4 | QA, Despliegue y Producción | ⏳ Pendiente |
+| FASE 4 | QA, Despliegue y Producción | ✅ Completada (pendiente UAT y despliegue efectivo) |
 
 ## Backend — arranque rápido
 
@@ -55,3 +55,23 @@ npm run dev                # panel en http://localhost:5173
 ```
 
 Guía de captura móvil: [docs/Guia_Atajos_iOS.md](docs/Guia_Atajos_iOS.md).
+
+## Documentación
+
+| Documento | Contenido |
+|-----------|-----------|
+| [docs/Guia_Atajos_iOS.md](docs/Guia_Atajos_iOS.md) | Configuración de los Atajos de iOS de los capturistas |
+| [docs/Manual_Tesorero.md](docs/Manual_Tesorero.md) | Operación diaria, cierre mensual y administración |
+| [docs/Despliegue.md](docs/Despliegue.md) | Entornos, Render + Vercel + Aiven, CI/CD y backups |
+| [docs/Diagrama_ER.md](docs/Diagrama_ER.md) | Mapa relacional de la base de datos (Mermaid) |
+| [docs/JEAF.postman_collection.json](docs/JEAF.postman_collection.json) | Colección Postman para probar la API sin el teléfono |
+| `http://localhost:3000/api/docs` | Swagger/OpenAPI interactivo (con el backend corriendo) |
+
+## Pruebas
+
+```bash
+cd Backend
+npm test          # unitarias (services, con mocks)
+npm run test:int  # integración (repositories contra MySQL real jeaf_test)
+npm run test:all  # ambas
+```

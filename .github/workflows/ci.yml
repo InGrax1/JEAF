@@ -1,0 +1,90 @@
+# JEAF — CI/CD (spec 10.6)
+# - Pruebas en cada push/PR a main o develop (unitarias + integración contra MySQL real).
+# - Deploy automático a STAGING al hacer push/merge a develop (Render deploy hook).
+# - Deploy a PRODUCCIÓN solo mediante tag v* (Render + Vercel se encargan del build).
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+    tags: ['v*']
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  backend:
+    name: Backend — pruebas unitarias e integración
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: ci_test_password
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -pci_test_password"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    defaults:
+      run:
+        working-directory: Backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: Backend/package-lock.json
+      - run: npm ci
+      - name: Pruebas unitarias (services, mocks)
+        run: npm test
+      - name: Pruebas de integración (repositories vs MySQL real)
+        run: npm run test:int
+        env:
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_USER: root
+          DB_PASSWORD: ci_test_password
+          DB_NAME: jeaf_test
+          JWT_ACCESS_SECRET: ci_access_secret
+          JWT_REFRESH_SECRET: ci_refresh_secret
+
+  frontend:
+    name: Frontend — typecheck y build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: Frontend/package-lock.json
+      - run: npm ci
+      - run: npm run build
+
+  deploy-staging:
+    name: Deploy a staging (Render)
+    needs: [backend, frontend]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    steps:
+      # Configurar el secreto RENDER_STAGING_DEPLOY_HOOK en GitHub:
+      # Settings → Secrets and variables → Actions
+      - name: Disparar deploy hook de Render (staging)
+        run: curl -fsS "${{ secrets.RENDER_STAGING_DEPLOY_HOOK }}"
+
+  deploy-produccion:
+    name: Deploy a producción (Render, por tag)
+    needs: [backend, frontend]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      # El frontend en Vercel se publica desde su propia integración con GitHub
+      # (Production Branch = main). Este job solo dispara el backend.
+      - name: Disparar deploy hook de Render (producción)
+        run: curl -fsS "${{ secrets.RENDER_PROD_DEPLOY_HOOK }}"

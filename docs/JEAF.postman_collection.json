@@ -1,0 +1,254 @@
+{
+  "info": {
+    "name": "JEAF API",
+    "description": "Colección para probar el alta de ingresos y gastos sin usar el teléfono (spec 9.1). Configura las variables base_url, email y password; el login guarda los tokens automáticamente.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:3000/api/v1" },
+    { "key": "email", "value": "tesorero@jeaf.local" },
+    { "key": "password", "value": "CambiarAlEntrar1!" },
+    { "key": "access_token", "value": "" },
+    { "key": "refresh_token", "value": "" },
+    { "key": "api_key", "value": "" },
+    { "key": "categoria_id", "value": "c0000000-0000-4000-8000-000000000001" }
+  ],
+  "item": [
+    {
+      "name": "Sistema",
+      "item": [
+        {
+          "name": "Health check",
+          "request": { "method": "GET", "url": "{{base_url}}/health" }
+        }
+      ]
+    },
+    {
+      "name": "Autenticación",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.ok) {",
+                  "  pm.collectionVariables.set('access_token', json.data.accessToken);",
+                  "  pm.collectionVariables.set('refresh_token', json.data.refreshToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/auth/login",
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}" }
+          }
+        },
+        {
+          "name": "Refresh token",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/auth/refresh",
+            "body": { "mode": "raw", "raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Transacciones",
+      "item": [
+        {
+          "name": "Alta de ingreso (como el Atajo iOS, con API Key)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": ["pm.collectionVariables.set('idem_key', 'postman-' + Date.now() + '-' + Math.floor(Math.random()*100000));"],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Api-Key", "value": "{{api_key}}" }
+            ],
+            "url": "{{base_url}}/transacciones",
+            "body": { "mode": "raw", "raw": "{\n  \"tipo\": \"ingreso\",\n  \"monto\": 250.50,\n  \"categoriaId\": \"{{categoria_id}}\",\n  \"notas\": \"Prueba desde Postman\",\n  \"idempotencyKey\": \"{{idem_key}}\"\n}" }
+          }
+        },
+        {
+          "name": "Alta de gasto (con JWT, como el panel)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": ["pm.collectionVariables.set('idem_key', 'postman-' + Date.now() + '-' + Math.floor(Math.random()*100000));"],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{base_url}}/transacciones",
+            "body": { "mode": "raw", "raw": "{\n  \"tipo\": \"egreso\",\n  \"monto\": 99.99,\n  \"categoriaId\": \"c0000000-0000-4000-8000-000000000004\",\n  \"notas\": \"Gasto de prueba\",\n  \"idempotencyKey\": \"{{idem_key}}\"\n}" }
+          }
+        },
+        {
+          "name": "Listar (filtros y paginación)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/transacciones?page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["transacciones"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" },
+                { "key": "tipo", "value": "ingreso", "disabled": true },
+                { "key": "estado", "value": "activa", "disabled": true },
+                { "key": "conciliada", "value": "false", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Cancelar con motivo",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{base_url}}/transacciones/PEGAR-UUID-AQUI/cancelar",
+            "body": { "mode": "raw", "raw": "{\n  \"motivo\": \"Monto capturado por error\"\n}" }
+          }
+        },
+        {
+          "name": "Conciliar en banco",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{base_url}}/transacciones/PEGAR-UUID-AQUI/conciliar",
+            "body": { "mode": "raw", "raw": "{\n  \"conciliada\": true\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Categorías",
+      "item": [
+        {
+          "name": "Listar activas (menú del Atajo)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "X-Api-Key", "value": "{{api_key}}" }],
+            "url": "{{base_url}}/categorias?soloActivas=true"
+          }
+        },
+        {
+          "name": "Crear categoría",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{base_url}}/categorias",
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Misiones\",\n  \"tipo\": \"ingreso\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Usuarios y API Keys",
+      "item": [
+        {
+          "name": "Listar usuarios",
+          "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": "{{base_url}}/usuarios" }
+        },
+        {
+          "name": "Crear capturista",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{base_url}}/usuarios",
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Voluntario Conteo\",\n  \"email\": \"voluntario@jeaf.local\",\n  \"password\": \"Password123!\",\n  \"rol\": \"capturista\"\n}" }
+          }
+        },
+        {
+          "name": "Generar API Key (guardar: se muestra una vez)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.ok && json.data.apiKey) pm.collectionVariables.set('api_key', json.data.apiKey);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{base_url}}/api-keys",
+            "body": { "mode": "raw", "raw": "{\n  \"usuarioId\": \"b0000000-0000-4000-8000-000000000001\",\n  \"etiqueta\": \"Postman de pruebas\"\n}" }
+          }
+        },
+        {
+          "name": "Listar API Keys",
+          "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": "{{base_url}}/api-keys" }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard y Reportes",
+      "item": [
+        {
+          "name": "Resumen del dashboard",
+          "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": "{{base_url}}/dashboard/resumen" }
+        },
+        {
+          "name": "Reporte mensual PDF",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": "{{base_url}}/reportes/mensual?anio=2026&mes=7&formato=pdf"
+          }
+        },
+        {
+          "name": "Reporte mensual Excel",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": "{{base_url}}/reportes/mensual?anio=2026&mes=7&formato=xlsx"
+          }
+        }
+      ]
+    }
+  ]
+}
