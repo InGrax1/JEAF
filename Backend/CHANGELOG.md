@@ -9,9 +9,31 @@ Versionado alineado a las fases de desarrollo de la especificación JEAF v1.2.
 ## [No publicado]
 
 ### Pendiente
-- FASE 1 — Motor de Transacciones e iOS: endpoints transaccionales (`POST /api/v1/transacciones` con idempotencia), rate limiting por API key, cancelación con motivo obligatorio, conciliación bancaria.
 - FASE 3 — Cierres y Reportes: generación de PDF/Excel mensuales, endpoints de reportes y balances.
-- FASE 4 — QA, entornos (dev/staging/prod), CI/CD con GitHub Actions, backups.
+- FASE 4 — QA (pruebas de integración contra MySQL real), entornos (dev/staging/prod), CI/CD con GitHub Actions, backups.
+
+---
+
+## [0.2.0] — 2026-07-03 — FASE 1: Motor de Transacciones e iOS
+
+### Agregado
+- **`POST /api/v1/transacciones`** — captura desde Atajos de iOS (API Key) o panel web (JWT, autenticación dual):
+  - **Idempotencia** (spec 10.1): si la `idempotency_key` ya fue procesada responde `200 OK` con la transacción existente, sin duplicar. Detectado a nivel de índice único (a prueba de condiciones de carrera).
+  - Validación estricta: monto positivo `DECIMAL(12,2)`, categoría existente/activa y coherente con el tipo (ingreso/egreso).
+  - Respuesta con **folio corto** (últimos 6 chars del UUID) para el flujo de corrección del capturista (spec 10.5) y `mensaje` listo para la notificación local del Atajo.
+  - **Rate limiting por API key**: 30 peticiones/minuto (spec 10.4).
+  - Campo `origen` (`ios_shortcut` | `panel_web`) para trazabilidad.
+- **`GET /api/v1/transacciones`** — listado con paginación y filtros (fecha, categoría, tipo, capturista, estado, conciliada). Solo Tesorero y Auditor.
+- **`POST /api/v1/transacciones/:id/cancelar`** — regla de inmutabilidad (spec 4.1): nunca DELETE; cambia estado a `cancelada` con **motivo obligatorio**, `deleted_at` y quién canceló. Solo Tesorero.
+- **`POST /api/v1/transacciones/:id/conciliar`** — marcar/desmarcar "Conciliado en banco". Solo Tesorero.
+- **CRUD de categorías** (`/api/v1/categorias`): lectura vía API Key (menú dinámico del Atajo) o JWT; creación/edición/activación solo Tesorero. Bloqueo de cambio de `tipo` si la categoría ya tiene transacciones históricas.
+- **Middleware `authDual`**: distingue API Keys (prefijo `jeaf_`) de JWTs en el mismo endpoint.
+- **Auditoría completa**: INSERT/CANCEL/UPDATE de transacciones y categorías quedan en `logs_auditoria` con estado anterior/nuevo, usuario e IP, dentro de transacciones SQL.
+- **Pruebas unitarias (Vitest)** de la capa `services/` (spec 10.6): idempotencia, validaciones de categoría, cancelación y conciliación — 9 pruebas.
+- **Guía de Atajos de iOS** (`docs/Guia_Atajos_iOS.md`): configuración paso a paso de los 2 atajos (ingreso/gasto), generación de `idempotency_key`, reintentos 2–3 veces y respaldo en app Notas sin señal (spec 10.2).
+
+### Cambiado
+- Servicios ahora invocan `db.withTransaction(...)` (en lugar de desestructurar) para permitir espionaje en pruebas unitarias.
 
 ---
 

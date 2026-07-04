@@ -2,7 +2,7 @@
 const bcrypt = require('bcrypt');
 const { v4: uuidv4 } = require('uuid');
 const env = require('../config/env');
-const { withTransaction } = require('../config/db');
+const db = require('../config/db');
 const usuariosRepository = require('../repositories/usuarios.repository');
 const rolesRepository = require('../repositories/roles.repository');
 const auditService = require('./audit.service');
@@ -28,7 +28,7 @@ async function crear({ nombre, email, password, rol }, contexto) {
   const id = uuidv4();
   const passwordHash = await bcrypt.hash(password, env.bcryptSaltRounds);
 
-  await withTransaction(async (conn) => {
+  await db.withTransaction(async (conn) => {
     await usuariosRepository.insert({ id, nombre, email, passwordHash, rolId: rolRegistro.id }, conn);
     await auditService.registrar(
       {
@@ -62,7 +62,7 @@ async function actualizar(id, cambios, contexto) {
     campos.rolId = rolRegistro.id;
   }
 
-  await withTransaction(async (conn) => {
+  await db.withTransaction(async (conn) => {
     await usuariosRepository.update(id, campos, conn);
     const { password, ...cambiosSinPassword } = cambios;
     await auditService.registrar(
@@ -88,7 +88,7 @@ async function eliminar(id, contexto) {
     throw new AppError('No puedes eliminar tu propio usuario', 400, 'SELF_DELETE_FORBIDDEN');
   }
 
-  await withTransaction(async (conn) => {
+  await db.withTransaction(async (conn) => {
     await usuariosRepository.softDelete(id, conn);
     await auditService.registrar(
       {

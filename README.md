@@ -26,7 +26,7 @@ JEAF/
 | Fase | Nombre | Estado |
 |------|--------|--------|
 | FASE 0 | Arquitectura y Base de Datos | ✅ Completada |
-| FASE 1 | Motor de Transacciones e iOS | ⏳ Pendiente |
+| FASE 1 | Motor de Transacciones e iOS | ✅ Completada |
 | FASE 2 | Panel Administrativo Web | ⏳ Pendiente |
 | FASE 3 | Cierres y Reportes Legales | ⏳ Pendiente |
 | FASE 4 | QA, Despliegue y Producción | ⏳ Pendiente |

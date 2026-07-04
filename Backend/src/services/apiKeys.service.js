@@ -2,7 +2,7 @@
 // La key en claro se genera aquí, se devuelve UNA sola vez y solo se persiste su hash.
 const crypto = require('crypto');
 const { v4: uuidv4 } = require('uuid');
-const { withTransaction } = require('../config/db');
+const db = require('../config/db');
 const apiKeysRepository = require('../repositories/apiKeys.repository');
 const usuariosRepository = require('../repositories/usuarios.repository');
 const auditService = require('./audit.service');
@@ -21,7 +21,7 @@ async function crear({ usuarioId, etiqueta }, contexto) {
   const keyPlano = `jeaf_${crypto.randomBytes(32).toString('base64url')}`;
   const id = uuidv4();
 
-  await withTransaction(async (conn) => {
+  await db.withTransaction(async (conn) => {
     await apiKeysRepository.insert(
       {
         id,
@@ -54,7 +54,7 @@ async function revocar(id, contexto) {
   if (!registro) throw new AppError('API Key no encontrada', 404, 'API_KEY_NOT_FOUND');
   if (registro.revoked_at !== null) throw new AppError('La API Key ya fue revocada', 409, 'ALREADY_REVOKED');
 
-  await withTransaction(async (conn) => {
+  await db.withTransaction(async (conn) => {
     await apiKeysRepository.revoke(id, conn);
     await auditService.registrar(
       {
