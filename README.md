@@ -27,7 +27,7 @@ JEAF/
 |------|--------|--------|
 | FASE 0 | Arquitectura y Base de Datos | ✅ Completada |
 | FASE 1 | Motor de Transacciones e iOS | ✅ Completada |
-| FASE 2 | Panel Administrativo Web | ⏳ Pendiente |
+| FASE 2 | Panel Administrativo Web | ✅ Completada |
 | FASE 3 | Cierres y Reportes Legales | ⏳ Pendiente |
 | FASE 4 | QA, Despliegue y Producción | ⏳ Pendiente |
 
@@ -44,3 +44,14 @@ npm run dev
 ```
 
 La API queda disponible en `http://localhost:3000/api/v1` (health check: `GET /api/v1/health`).
+
+## Frontend — arranque rápido
+
+```bash
+cd Frontend
+npm install
+cp .env.example .env       # apuntar VITE_API_URL al backend
+npm run dev                # panel en http://localhost:5173
+```
+
+Guía de captura móvil: [docs/Guia_Atajos_iOS.md](docs/Guia_Atajos_iOS.md).

@@ -14,6 +14,21 @@ Versionado alineado a las fases de desarrollo de la especificación JEAF v1.2.
 
 ---
 
+## [0.3.0] — 2026-07-03 — FASE 2: soporte del Panel Web
+
+### Agregado
+- **`GET /api/v1/dashboard/resumen`** (Tesorero y Auditor): balance total histórico (flujo de caja), ingresos/egresos del mes y del año en curso, serie mensual de los últimos 12 meses y desglose por categoría del mes. Todas las cifras excluyen transacciones canceladas.
+- Nueva capa `dashboard.repository` (agregaciones SQL) y `dashboard.service` (cálculo de periodos UTC y normalización de DECIMAL).
+
+### Corregido
+- Validación de email en Joi ahora acepta dominios internos (ej. `tesorero@jeaf.local`): se valida el formato sin exigir TLD de la lista IANA.
+
+### Verificado (E2E contra MySQL real, 2026-07-04)
+- Login JWT → captura (folio + mensaje) → reintento idempotente (200, sin duplicar) → cancelación con motivo → conciliación → dashboard (excluye canceladas) → 4 registros en `logs_auditoria`.
+- Panel web completo en navegador: login real, dashboard con gráficas y tabla de transacciones con datos vivos.
+
+---
+
 ## [0.2.0] — 2026-07-03 — FASE 1: Motor de Transacciones e iOS
 
 ### Agregado

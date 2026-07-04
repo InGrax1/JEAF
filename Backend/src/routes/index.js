@@ -5,6 +5,7 @@ const usuariosRoutes = require('./usuarios.routes');
 const apiKeysRoutes = require('./apiKeys.routes');
 const transaccionesRoutes = require('./transacciones.routes');
 const categoriasRoutes = require('./categorias.routes');
+const dashboardRoutes = require('./dashboard.routes');
 
 const router = Router();
 
@@ -18,6 +19,7 @@ router.use('/usuarios', usuariosRoutes);
 router.use('/api-keys', apiKeysRoutes);
 router.use('/transacciones', transaccionesRoutes);
 router.use('/categorias', categoriasRoutes);
+router.use('/dashboard', dashboardRoutes);
 
 // FASE 3: /reportes — pendiente
 

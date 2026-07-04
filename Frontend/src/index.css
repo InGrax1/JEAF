@@ -1,0 +1,16 @@
+@import 'tailwindcss';
+
+@theme {
+  /* Verde institucional (mismo tono de la especificación) */
+  --color-jeaf-50: #ecf7f0;
+  --color-jeaf-100: #d2ecdb;
+  --color-jeaf-500: #2c8a4f;
+  --color-jeaf-600: #1f6b3b;
+  --color-jeaf-700: #185530;
+  --color-jeaf-800: #123f24;
+  --color-jeaf-900: #0c2c19;
+}
+
+body {
+  @apply bg-gray-100 text-gray-900 antialiased;
+}

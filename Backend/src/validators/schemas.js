@@ -5,7 +5,7 @@ const Joi = require('joi');
 const uuid = Joi.string().uuid({ version: 'uuidv4' }).required();
 
 const loginSchema = Joi.object({
-  email: Joi.string().email().max(190).required(),
+  email: Joi.string().email({ tlds: { allow: false } }).max(190).required(),
   password: Joi.string().min(8).max(100).required(),
 }).unknown(false);
 
@@ -15,14 +15,14 @@ const refreshSchema = Joi.object({
 
 const crearUsuarioSchema = Joi.object({
   nombre: Joi.string().min(2).max(120).required(),
-  email: Joi.string().email().max(190).required(),
+  email: Joi.string().email({ tlds: { allow: false } }).max(190).required(),
   password: Joi.string().min(8).max(100).required(),
   rol: Joi.string().valid('super_admin', 'auditor', 'capturista').required(),
 }).unknown(false);
 
 const actualizarUsuarioSchema = Joi.object({
   nombre: Joi.string().min(2).max(120),
-  email: Joi.string().email().max(190),
+  email: Joi.string().email({ tlds: { allow: false } }).max(190),
   password: Joi.string().min(8).max(100),
   rol: Joi.string().valid('super_admin', 'auditor', 'capturista'),
   activo: Joi.boolean(),
