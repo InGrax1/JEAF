@@ -27,7 +27,7 @@ coverage/
 .claude/
 CLAUDE.md
 
-
-database/
-schema.sql
+# seed.sql trae el hash de la contraseña por defecto del usuario semilla
+# (documentada en texto plano en README/CHANGELOG/Manual_Tesorero) — no
+# versionar. schema.sql SÍ se versiona: solo define tablas, sin datos.
 seed.sql
