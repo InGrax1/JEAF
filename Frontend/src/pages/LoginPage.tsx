@@ -32,7 +32,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-jeaf-900 p-4">
-      <div className="w-full max-w-sm rounded-lg bg-white p-8 shadow-xl">
+      <div className="animate-modal-in w-full max-w-sm rounded-3xl bg-white p-8 shadow-2xl">
         <h1 className="text-center text-2xl font-bold text-jeaf-800">JEAF</h1>
         <p className="mb-6 text-center text-sm text-gray-500">Panel Administrativo</p>
         <form onSubmit={onSubmit} className="space-y-4">

@@ -256,7 +256,7 @@ export default function TransaccionesPage() {
             <div className="flex justify-end gap-2">
               <button className={btnSecundario} onClick={() => setACancelar(null)}>Volver</button>
               <button
-                className="rounded bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                className="inline-flex min-h-11 items-center justify-center rounded-full bg-red-600 px-5 text-sm font-semibold text-white transition-all duration-150 ease-out hover:bg-red-700 active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100"
                 disabled={motivo.trim().length < 5 || procesando}
                 onClick={confirmarCancelacion}
               >

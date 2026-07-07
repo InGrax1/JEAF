@@ -37,7 +37,7 @@ export default function Layout() {
               to={e.a}
               end={e.a === '/'}
               className={({ isActive }) =>
-                `block rounded px-3 py-2 text-sm transition ${
+                `block rounded-xl px-3.5 py-2.5 text-sm transition-colors duration-150 ${
                   isActive ? 'bg-jeaf-600 font-semibold' : 'text-jeaf-100/80 hover:bg-jeaf-700'
                 }`
               }
@@ -48,10 +48,10 @@ export default function Layout() {
         </nav>
         <div className="border-t border-jeaf-700 px-5 py-4 text-sm">
           <p className="font-medium">{usuario.nombre}</p>
-          <p className="mb-2 text-xs text-jeaf-100/70">{ETIQUETA_ROL[usuario.rol] ?? usuario.rol}</p>
+          <p className="mb-3 text-xs text-jeaf-100/70">{ETIQUETA_ROL[usuario.rol] ?? usuario.rol}</p>
           <button
             onClick={logout}
-            className="w-full rounded bg-jeaf-700 px-3 py-1.5 text-xs hover:bg-jeaf-600"
+            className="min-h-9 w-full rounded-full bg-jeaf-700 px-3 text-xs font-medium transition-all duration-150 hover:bg-jeaf-600 active:scale-[0.98]"
           >
             Cerrar sesión
           </button>

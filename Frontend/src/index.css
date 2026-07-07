@@ -9,8 +9,76 @@
   --color-jeaf-700: #185530;
   --color-jeaf-800: #123f24;
   --color-jeaf-900: #0c2c19;
+
+  /* Tipografía del sistema (Apple HIG): SF Pro con fallback a system-ui */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue',
+    Arial, sans-serif;
+
+  /* Escala de grises remapeada a los grises exactos de Apple (Apple HIG):
+     se propaga a todas las utilidades gray ya usadas en la app (bg, text, border) */
+  --color-gray-50: #f2f2f7; /* systemGray6 */
+  --color-gray-100: #e5e5ea; /* systemGray5 */
+  --color-gray-200: #d1d1d6; /* systemGray4 */
+  --color-gray-300: #c7c7cc; /* systemGray3 */
+  --color-gray-400: #aeaeb2; /* systemGray2 */
+  --color-gray-500: #8e8e93; /* systemGray */
+  --color-gray-600: #6e6e73;
+  --color-gray-700: #48484a;
+  --color-gray-800: #2c2c2e;
+  --color-gray-900: #1c1c1e;
+
+  /* Curva de resorte de Apple para micro-interacciones (botones, modal) */
+  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 body {
-  @apply bg-gray-100 text-gray-900 antialiased;
+  @apply bg-gray-50 text-gray-900 antialiased;
+}
+
+/* Foco accesible consistente con la marca (en vez del azul de sistema por defecto) */
+:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: 0 0 0 4px rgb(44 138 79 / 0.3);
+}
+
+/* Respeta la preferencia de movimiento reducido (accesibilidad, Apple HIG) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Scrollbar discreta (WebKit) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-gray-300);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-gray-400);
+}
+
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+.animate-modal-in {
+  animation: modal-in 200ms var(--ease-spring);
 }

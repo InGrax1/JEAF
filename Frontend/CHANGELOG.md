@@ -13,6 +13,26 @@ Versionado alineado a las fases de desarrollo de la especificación JEAF v1.2.
 
 ---
 
+## [0.2.2] — 2026-07-06 — Rediseño Apple HIG
+
+### Cambiado
+- **Tipografía**: pila del sistema SF Pro (`-apple-system, BlinkMacSystemFont, 'SF Pro Text/Display'...`) aplicada globalmente vía `--font-sans` en `index.css` — no requiere tocar cada página.
+- **Escala de grises remapeada** a los grises exactos de Apple (`systemGray6`…`systemGray`) sobre el propio namespace `gray-*` de Tailwind, por lo que se propaga automáticamente a todas las páginas que ya usan `bg-gray-*`/`text-gray-*`/`border-gray-*`.
+- **Componentes compartidos** (`src/components/ui.tsx`, usados por todas las páginas):
+  - `Card`: radio 16px (`rounded-2xl`) con anillo sutil, en vez de esquinas cuadradas.
+  - `Modal`: radio 24px, indicador tipo "hoja" (grabber) arriba, entrada animada (`animate-modal-in`, curva de resorte).
+  - Inputs (`inputCls`): relleno tenue en vez de borde visible, altura mínima 44px (objetivo táctil), anillo de foco en el acento de marca.
+  - Botones (`btnPrimario`/`btnSecundario`): forma de cápsula, 44px de alto, retroalimentación de presión (`active:scale-[0.98]`).
+  - Insignias: más padding, proporciones de cápsula más fieles a HIG.
+- **Barra lateral** (`Layout.tsx`): ítems de navegación con radio 12px y transición de color; botón de cierre de sesión en cápsula.
+- Accesibilidad: `prefers-reduced-motion` respetado globalmente; anillo de foco visible consistente (`:focus-visible`) en vez de solo el default del navegador.
+- Instalada la skill de terceros `apple-hig-designer` (alcance de proyecto, revisada antes de usarse — sin código ejecutable, solo referencia de diseño) como base de estos cambios.
+
+### Verificado
+- `npm run build` sin errores; recorrido visual en navegador (login, dashboard, transacciones, modal de cancelación) contra el backend real — sin errores de consola.
+
+---
+
 ## [0.2.1] — 2026-07-04 — FASE 4: preparación para despliegue
 
 ### Agregado
