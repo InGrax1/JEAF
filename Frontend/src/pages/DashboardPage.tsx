@@ -19,7 +19,7 @@ import { formatoMoneda, formatoMes } from '../lib/format';
 import type { DashboardResumen } from '../lib/types';
 import { Card, Cargando, MensajeError } from '../components/ui';
 
-const COLORES = ['#1f6b3b', '#2c8a4f', '#5cb377', '#8ed0a4', '#c4e6cf', '#e0a030', '#c0392b', '#7f8c8d'];
+const COLORES = ['#08875b', '#0ea972', '#3fc38f', '#7ad9b3', '#c3ecd9', '#e0a030', '#c0392b', '#64748b'];
 
 function TarjetaCifra({ titulo, valor, tono }: { titulo: string; valor: number; tono?: 'verde' | 'rojo' }) {
   const color = tono === 'verde' ? 'text-jeaf-600' : tono === 'rojo' ? 'text-red-600' : 'text-gray-900';
@@ -110,7 +110,7 @@ export default function DashboardPage() {
             <YAxis fontSize={12} tickFormatter={(v) => `$${Number(v).toLocaleString()}`} />
             <Tooltip formatter={(v) => formatoMoneda(Number(v))} />
             <Legend />
-            <Bar dataKey="ingresos" name="Ingresos" fill="#1f6b3b" radius={[3, 3, 0, 0]} />
+            <Bar dataKey="ingresos" name="Ingresos" fill="#08875b" radius={[3, 3, 0, 0]} />
             <Bar dataKey="egresos" name="Egresos" fill="#c0392b" radius={[3, 3, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>

@@ -33,6 +33,17 @@ Versionado alineado a las fases de desarrollo de la especificación JEAF v1.2.
 
 ---
 
+## [0.2.3] — 2026-07-07 — Paleta de color más vívida
+
+### Cambiado
+- **Verde institucional (`jeaf-*`)**: recalibrado a un esmeralda más saturado y vívido (`#0ea972`/`#08875b` como tonos principales) manteniendo el mismo matiz del acento del documento de especificación original, en vez del verde bosque apagado anterior. Cambio hecho en el token central de `index.css`, por lo que se propaga automáticamente a botones, barra lateral, insignias y anillo de foco sin tocar cada página.
+- Colores de las gráficas del dashboard (`DashboardPage.tsx`, Recharts no lee variables CSS) actualizados a juego con la nueva paleta.
+
+### Verificado
+- `npm run build` sin errores; contraste de texto blanco sobre el nuevo verde confirmado en navegador (`rgb(8,135,91)`); gráficas de barras y dona revisadas visualmente.
+
+---
+
 ## [0.2.1] — 2026-07-04 — FASE 4: preparación para despliegue
 
 ### Agregado

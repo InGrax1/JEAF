@@ -2,6 +2,12 @@
 
 Sistema transaccional interno single-tenant para automatizar el registro, control y auditoría de ingresos (ofrendas, diezmos, donaciones) y gastos. Basado en la especificación **JEAF v1.2** ([docs/JEAF_Especificacion_v1_2.docx](docs/JEAF_Especificacion_v1_2.docx)).
 
+## Capturas
+
+| Panel web — Dashboard financiero | Captura móvil — Atajo de iOS |
+|---|---|
+| ![Dashboard financiero del panel web JEAF](docs/screenshots/dashboard.png) | ![Configuración del Atajo de iOS para JEAF](docs/screenshots/atajo-ios.png) |
+
 ## Arquitectura
 
 | Capa | Tecnología |

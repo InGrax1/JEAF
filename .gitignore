@@ -27,7 +27,12 @@ coverage/
 .claude/
 CLAUDE.md
 
+skills-lock.json
+.github/
+
+
 # seed.sql trae el hash de la contraseña por defecto del usuario semilla
 # (documentada en texto plano en README/CHANGELOG/Manual_Tesorero) — no
 # versionar. schema.sql SÍ se versiona: solo define tablas, sin datos.
 seed.sql
+

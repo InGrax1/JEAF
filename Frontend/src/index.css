@@ -1,14 +1,16 @@
 @import 'tailwindcss';
 
 @theme {
-  /* Verde institucional (mismo tono de la especificación) */
-  --color-jeaf-50: #ecf7f0;
-  --color-jeaf-100: #d2ecdb;
-  --color-jeaf-500: #2c8a4f;
-  --color-jeaf-600: #1f6b3b;
-  --color-jeaf-700: #185530;
-  --color-jeaf-800: #123f24;
-  --color-jeaf-900: #0c2c19;
+  /* Verde institucional — esmeralda vívido pero serio, más saturado que el
+     tono original (mantiene el mismo matiz del acento del documento de
+     especificación, con más vida y mejor contraste) */
+  --color-jeaf-50: #e3f8ef;
+  --color-jeaf-100: #b8ecd7;
+  --color-jeaf-500: #0ea972;
+  --color-jeaf-600: #08875b;
+  --color-jeaf-700: #076b48;
+  --color-jeaf-800: #0b4f38;
+  --color-jeaf-900: #082f22;
 
   /* Tipografía del sistema (Apple HIG): SF Pro con fallback a system-ui */
   --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue',
@@ -38,7 +40,7 @@ body {
 /* Foco accesible consistente con la marca (en vez del azul de sistema por defecto) */
 :focus-visible {
   outline: 2px solid transparent;
-  box-shadow: 0 0 0 4px rgb(44 138 79 / 0.3);
+  box-shadow: 0 0 0 4px rgb(14 169 114 / 0.3);
 }
 
 /* Respeta la preferencia de movimiento reducido (accesibilidad, Apple HIG) */
