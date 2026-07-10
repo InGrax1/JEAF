@@ -10,6 +10,27 @@ Versionado alineado a las fases de desarrollo de la especificación JEAF v1.2.
 
 ### Pendiente
 - UAT con el tesorero real y despliegue efectivo a Render/Vercel/Aiven (requiere cuentas y credenciales — ver `docs/Despliegue.md`).
+- Configurar variables `SMTP_*` en Render para que la recuperación de contraseña envíe correos reales en producción (ver más abajo).
+
+---
+
+## [0.6.0] — 2026-07-10 — Recuperación de contraseña por correo
+
+### Agregado
+- **`POST /api/v1/auth/olvide-password`**: solicita un código de verificación de 6 dígitos al correo del usuario. Responde siempre el mismo mensaje genérico exista o no la cuenta (mismo principio anti-enumeración que el login) y solo genera/envía el código si el usuario existe, está activo y no eliminado. Rate limit: 3 solicitudes por IP cada 15 minutos.
+- **`POST /api/v1/auth/restablecer-password`**: verifica el código y establece la nueva contraseña en un solo paso. El código expira a los 15 minutos, admite máximo 5 intentos fallidos antes de invalidarse (hay que solicitar uno nuevo) y es de un solo uso. Comparación del código en tiempo constante (`crypto.timingSafeEqual`) para evitar side-channels de temporización. Rate limit: 10 intentos por IP cada 15 minutos.
+- **Tabla `codigos_recuperacion`** (`database/schema.sql`): solo guarda el hash SHA-256 del código, nunca en texto plano — mismo principio que `api_keys`.
+- **`utils/email.js`**: envío de correo vía SMTP (nodemailer). En desarrollo, si no hay `SMTP_*` configurado, el correo se imprime en la consola del servidor (permite probar el flujo completo sin credenciales reales); en producción, falla con un error claro si falta configurar.
+- El restablecimiento exitoso queda auditado en `logs_auditoria` (UPDATE sobre `usuarios`), dentro de la misma transacción que actualiza el hash de la contraseña y marca el código como usado.
+- Variables nuevas en `.env.example`: `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`.
+
+### Verificado
+- 5 pruebas unitarias nuevas (`tests/auth.service.test.js`): anti-enumeración, generación/hash del código, código incorrecto incrementa intentos, límite de intentos, y flujo exitoso completo con auditoría.
+- 2 pruebas de integración nuevas contra MySQL real: código vigente vs. expirado vs. usado.
+- Flujo E2E verificado contra el backend y panel real: solicitud de código, anti-enumeración (mismo mensaje para correo existente/inexistente), código incorrecto rechazado, código de un solo uso (falla al reintentarlo), login con contraseña vieja falla y con la nueva funciona — probado tanto por API como en el navegador.
+
+### Nota de despliegue
+- **Producción requiere configurar `SMTP_*` en Render** (ver `docs/Despliegue.md`) — sin esas variables, `POST /auth/olvide-password` responderá `500 EMAIL_NOT_CONFIGURED` en ese entorno (a diferencia de desarrollo, donde el código solo se imprime en consola).
 
 ---
 

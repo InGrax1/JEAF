@@ -27,4 +27,14 @@ module.exports = {
   bcryptSaltRounds: parseInt(process.env.BCRYPT_SALT_ROUNDS, 10) || 12,
   localTimezone: process.env.LOCAL_TIMEZONE || 'America/Mexico_City',
   iglesiaNombre: process.env.IGLESIA_NOMBRE || 'JEAF — Gestión Financiera',
+  // SMTP es opcional a nivel de arranque (no rompe el servidor si falta):
+  // se valida hasta el momento de enviar un correo real (ver utils/email.js).
+  smtp: {
+    host: process.env.SMTP_HOST,
+    port: parseInt(process.env.SMTP_PORT, 10) || 587,
+    secure: process.env.SMTP_SECURE === 'true',
+    user: process.env.SMTP_USER,
+    password: process.env.SMTP_PASSWORD,
+    from: process.env.SMTP_FROM || 'JEAF <no-responder@jeaf.local>',
+  },
 };

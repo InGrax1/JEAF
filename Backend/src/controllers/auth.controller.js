@@ -19,4 +19,22 @@ async function refresh(req, res, next) {
   }
 }
 
-module.exports = { login, refresh };
+async function olvidePassword(req, res, next) {
+  try {
+    const resultado = await authService.olvidePassword(req.body, { ip: req.ip });
+    res.json({ ok: true, data: resultado });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function restablecerPassword(req, res, next) {
+  try {
+    const resultado = await authService.restablecerPassword(req.body, { ip: req.ip });
+    res.json({ ok: true, data: resultado });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { login, refresh, olvidePassword, restablecerPassword };

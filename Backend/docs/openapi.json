@@ -119,6 +119,46 @@
         "responses": { "200": { "description": "Nuevos tokens" }, "401": { "description": "Refresh token inválido o expirado" } }
       }
     },
+    "/auth/olvide-password": {
+      "post": {
+        "tags": ["Autenticación"],
+        "summary": "Solicitar código de verificación por correo (recuperación de contraseña)",
+        "description": "Rate limit: 3 solicitudes por IP cada 15 minutos. Responde el mismo mensaje genérico exista o no el correo (anti-enumeración) y solo envía el código si la cuenta existe y está activa. Código de 6 dígitos, válido 15 minutos.",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "type": "object", "required": ["email"], "properties": { "email": { "type": "string", "format": "email" } } } } }
+        },
+        "responses": { "200": { "description": "Mensaje genérico (siempre 200)" }, "429": { "description": "Rate limit alcanzado" } }
+      }
+    },
+    "/auth/restablecer-password": {
+      "post": {
+        "tags": ["Autenticación"],
+        "summary": "Verificar el código y establecer una nueva contraseña",
+        "description": "Rate limit: 10 intentos por IP cada 15 minutos. El código admite máximo 5 intentos fallidos antes de requerir uno nuevo, y es de un solo uso.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "codigo", "password"],
+                "properties": {
+                  "email": { "type": "string", "format": "email" },
+                  "codigo": { "type": "string", "pattern": "^[0-9]{6}$", "example": "123456" },
+                  "password": { "type": "string", "minLength": 8 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Contraseña actualizada" },
+          "400": { "description": "Código inválido o expirado" },
+          "429": { "description": "Demasiados intentos fallidos o rate limit alcanzado" }
+        }
+      }
+    },
     "/transacciones": {
       "post": {
         "tags": ["Transacciones"],

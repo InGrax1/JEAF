@@ -13,6 +13,18 @@ const refreshSchema = Joi.object({
   refreshToken: Joi.string().required(),
 }).unknown(false);
 
+const olvidePasswordSchema = Joi.object({
+  email: Joi.string().email({ tlds: { allow: false } }).max(190).required(),
+}).unknown(false);
+
+const restablecerPasswordSchema = Joi.object({
+  email: Joi.string().email({ tlds: { allow: false } }).max(190).required(),
+  codigo: Joi.string().length(6).pattern(/^\d{6}$/).required().messages({
+    'string.pattern.base': '"codigo" debe tener exactamente 6 dígitos',
+  }),
+  password: Joi.string().min(8).max(100).required(),
+}).unknown(false);
+
 const crearUsuarioSchema = Joi.object({
   nombre: Joi.string().min(2).max(120).required(),
   email: Joi.string().email({ tlds: { allow: false } }).max(190).required(),
@@ -92,6 +104,8 @@ const reporteMensualQuerySchema = Joi.object({
 module.exports = {
   loginSchema,
   refreshSchema,
+  olvidePasswordSchema,
+  restablecerPasswordSchema,
   crearUsuarioSchema,
   actualizarUsuarioSchema,
   idParamSchema,

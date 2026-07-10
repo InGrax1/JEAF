@@ -22,6 +22,7 @@ const categoriasRepository = require('../../src/repositories/categorias.reposito
 const transaccionesRepository = require('../../src/repositories/transacciones.repository');
 const apiKeysRepository = require('../../src/repositories/apiKeys.repository');
 const logsRepository = require('../../src/repositories/logs.repository');
+const codigosRecuperacionRepository = require('../../src/repositories/codigosRecuperacion.repository');
 
 const ROL_ID = 'a0000000-0000-4000-8000-000000000001';
 const USUARIO_ID = 'b0000000-0000-4000-8000-000000000001';
@@ -184,6 +185,43 @@ describe('categorias.repository (MySQL real)', () => {
 
     const activas = await categoriasRepository.findAll({ soloActivas: true });
     expect(activas.some((c) => c.id === id)).toBe(false);
+  });
+});
+
+describe('codigosRecuperacion.repository (MySQL real)', () => {
+  it('encuentra solo el código vigente (no usado, no expirado) y respeta intentos/uso', async () => {
+    const id = crypto.randomUUID();
+    const futuro = new Date(Date.now() + 15 * 60 * 1000);
+    await codigosRecuperacionRepository.insert({
+      id,
+      usuarioId: USUARIO_ID,
+      codigoHash: 'a'.repeat(64),
+      expiraEn: futuro,
+    });
+
+    const vigente = await codigosRecuperacionRepository.findVigentePorUsuario(USUARIO_ID);
+    expect(vigente.id).toBe(id);
+    expect(vigente.intentos).toBe(0);
+
+    await codigosRecuperacionRepository.incrementarIntentos(id);
+    const trasIntento = await codigosRecuperacionRepository.findVigentePorUsuario(USUARIO_ID);
+    expect(trasIntento.intentos).toBe(1);
+
+    await codigosRecuperacionRepository.marcarUsado(id);
+    expect(await codigosRecuperacionRepository.findVigentePorUsuario(USUARIO_ID)).toBeNull();
+  });
+
+  it('un código expirado no se considera vigente', async () => {
+    const id = crypto.randomUUID();
+    const pasado = new Date(Date.now() - 60 * 1000);
+    await codigosRecuperacionRepository.insert({
+      id,
+      usuarioId: USUARIO_ID,
+      codigoHash: 'b'.repeat(64),
+      expiraEn: pasado,
+    });
+
+    expect(await codigosRecuperacionRepository.findVigentePorUsuario(USUARIO_ID)).toBeNull();
   });
 });
 

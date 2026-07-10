@@ -131,3 +131,21 @@ CREATE TABLE IF NOT EXISTS logs_auditoria (
   KEY idx_logs_usuario (usuario_id),
   KEY idx_logs_fecha (created_at)
 ) ENGINE=InnoDB;
+
+-- ------------------------------------------------------------
+-- codigos_recuperacion: códigos temporales de un solo uso para
+-- restablecer contraseña por correo. Solo se guarda el hash del
+-- código (SHA-256), nunca en texto plano.
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS codigos_recuperacion (
+  id           CHAR(36)  NOT NULL,
+  usuario_id   CHAR(36)  NOT NULL,
+  codigo_hash  CHAR(64)  NOT NULL,             -- SHA-256 hex del código de 6 dígitos
+  intentos     TINYINT   NOT NULL DEFAULT 0,   -- intentos fallidos de verificación
+  expira_en    DATETIME  NOT NULL,
+  usado_en     DATETIME  NULL,
+  created_at   DATETIME  NOT NULL DEFAULT (UTC_TIMESTAMP()),
+  PRIMARY KEY (id),
+  KEY idx_codigos_usuario (usuario_id),
+  CONSTRAINT fk_codigos_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios (id)
+) ENGINE=InnoDB;

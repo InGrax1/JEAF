@@ -1,6 +1,6 @@
 {
   "name": "jeaf-backend",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "JEAF — API REST de gestión financiera y contable para iglesias",
   "main": "src/server.js",
   "type": "commonjs",
@@ -26,6 +26,7 @@
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.11.0",
+    "nodemailer": "^9.0.3",
     "pdfkit": "^0.19.1",
     "swagger-ui-express": "^5.0.1",
     "uuid": "^9.0.1"
