@@ -8,12 +8,16 @@ Sistema transaccional interno single-tenant para automatizar el registro, contro
 |---|---|
 | ![Dashboard financiero del panel web JEAF](docs/screenshots/dashboard.png) | ![Configuración del Atajo de iOS para JEAF](docs/screenshots/atajo-ios.png) |
 
+| PWA — Aviso de instalación en iOS | PWA — Icono en la pantalla de inicio |
+|---|---|
+| ![Aviso "Instala JEAF en tu iPhone" en Safari](docs/screenshots/aviso-instalacion-ios.jpg) | ![Icono de JEAF instalado en la pantalla de inicio de iOS](docs/screenshots/icono-app.jpg) |
+
 ## Arquitectura
 
 | Capa | Tecnología |
 |------|-----------|
 | Captura móvil | Atajos de iOS (HTTP POST + API Key) |
-| Panel web | React + TypeScript + Vite + Tailwind CSS |
+| Panel web | React + TypeScript + Vite + Tailwind CSS (PWA instalable, enfocada en iOS) |
 | Backend | Node.js + Express.js (Clean Architecture) |
 | Base de datos | MySQL 8 (ACID, `DECIMAL(12,2)`, UUIDs, UTC) |
 | Auth | JWT (panel web) + API Keys hasheadas (Atajos iOS) |
@@ -61,6 +65,8 @@ npm run dev                # panel en http://localhost:5173
 ```
 
 Guía de captura móvil: [docs/Guia_Atajos_iOS.md](docs/Guia_Atajos_iOS.md).
+
+El panel es una **PWA instalable**: desde Safari en iPhone/iPad, tocar **Compartir → Agregar a inicio** la abre como una app (sin la barra de Safari, con su propio icono). El aviso con estos pasos aparece automáticamente en iOS mientras no esté instalada.
 
 ## Documentación
 
