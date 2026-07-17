@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import Layout from './components/Layout';
+import InstalarIOSBanner from './components/InstalarIOSBanner';
 import LoginPage from './pages/LoginPage';
 import RecuperarPasswordPage from './pages/RecuperarPasswordPage';
 import DashboardPage from './pages/DashboardPage';
@@ -23,45 +24,48 @@ function Protegida({ children, roles }: { children: ReactElement; roles?: Rol[] 
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/recuperar-password" element={<RecuperarPasswordPage />} />
-      <Route
-        element={
-          <Protegida>
-            <Layout />
-          </Protegida>
-        }
-      >
-        <Route path="/" element={<DashboardPage />} />
-        <Route path="/transacciones" element={<TransaccionesPage />} />
-        <Route path="/reportes" element={<ReportesPage />} />
+    <>
+      <InstalarIOSBanner />
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/recuperar-password" element={<RecuperarPasswordPage />} />
         <Route
-          path="/categorias"
           element={
-            <Protegida roles={['super_admin']}>
-              <CategoriasPage />
+            <Protegida>
+              <Layout />
             </Protegida>
           }
-        />
-        <Route
-          path="/usuarios"
-          element={
-            <Protegida roles={['super_admin']}>
-              <UsuariosPage />
-            </Protegida>
-          }
-        />
-        <Route
-          path="/api-keys"
-          element={
-            <Protegida roles={['super_admin']}>
-              <ApiKeysPage />
-            </Protegida>
-          }
-        />
-      </Route>
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+        >
+          <Route path="/" element={<DashboardPage />} />
+          <Route path="/transacciones" element={<TransaccionesPage />} />
+          <Route path="/reportes" element={<ReportesPage />} />
+          <Route
+            path="/categorias"
+            element={
+              <Protegida roles={['super_admin']}>
+                <CategoriasPage />
+              </Protegida>
+            }
+          />
+          <Route
+            path="/usuarios"
+            element={
+              <Protegida roles={['super_admin']}>
+                <UsuariosPage />
+              </Protegida>
+            }
+          />
+          <Route
+            path="/api-keys"
+            element={
+              <Protegida roles={['super_admin']}>
+                <ApiKeysPage />
+              </Protegida>
+            }
+          />
+        </Route>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </>
   );
 }

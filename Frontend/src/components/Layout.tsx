@@ -30,8 +30,10 @@ export default function Layout() {
 
   return (
     <div className="flex min-h-screen flex-col lg:flex-row">
-      {/* Barra superior — solo móvil/tablet */}
-      <header className="flex items-center justify-between border-b border-outline-variant bg-surface-container-lowest px-4 py-3 lg:hidden">
+      {/* Barra superior — solo móvil/tablet. pt- extra: respeta el notch/Dynamic
+          Island cuando la app corre en modo standalone en iOS (env() vale 0 en
+          navegador normal, así que no afecta ahí). */}
+      <header className="flex items-center justify-between border-b border-outline-variant bg-surface-container-lowest px-4 pb-3 pt-[calc(0.75rem_+_env(safe-area-inset-top))] lg:hidden">
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-bold text-on-primary">
             J
@@ -61,7 +63,10 @@ export default function Layout() {
         // .sidebar-desktop-visible (definida en index.css con @media clásico) la
         // fuerza siempre visible — ver esa regla para el motivo de no usar lg:!transform-none.
         style={{ transform: menuAbierto ? 'translateX(0)' : 'translateX(-100%)' }}
-        className="sidebar-desktop-visible fixed inset-y-0 left-0 z-40 flex w-[280px] shrink-0 flex-col border-r border-outline-variant bg-surface-container-lowest p-4 transition-transform duration-300 ease-out lg:sticky lg:top-0 lg:z-auto lg:h-screen"
+        // pt-/pb- separados (en vez de p-4) para poder sumarles el área segura
+        // de iOS arriba (notch) y abajo (home indicator) sin pisar el padding
+        // horizontal — ver Layout.tsx del header para el mismo patrón.
+        className="sidebar-desktop-visible fixed inset-y-0 left-0 z-40 flex w-[280px] shrink-0 flex-col border-r border-outline-variant bg-surface-container-lowest px-4 pt-[calc(1rem_+_env(safe-area-inset-top))] pb-[calc(1rem_+_env(safe-area-inset-bottom))] transition-transform duration-300 ease-out lg:sticky lg:top-0 lg:z-auto lg:h-screen"
       >
         <div className="mb-6 flex items-center justify-between gap-3 px-2 py-2">
           <div className="flex items-center gap-3">
@@ -116,8 +121,9 @@ export default function Layout() {
         </div>
       </aside>
 
-      {/* Márgenes de página: 16px móvil, 32px desktop (spec del sistema de diseño) */}
-      <main className="flex-1 overflow-x-auto p-4 lg:p-8">
+      {/* Márgenes de página: 16px móvil, 32px desktop (spec del sistema de diseño).
+          pb- extra en móvil: home indicator de iOS en modo standalone. */}
+      <main className="flex-1 overflow-x-auto p-4 pb-[calc(1rem_+_env(safe-area-inset-bottom))] lg:p-8">
         <Outlet />
       </main>
     </div>
