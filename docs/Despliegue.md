@@ -30,6 +30,7 @@ Estrategia de la especificación (10.6): **dev (local) → staging (Render) → 
    - `CORS_ORIGINS=https://tu-panel.vercel.app` (solo orígenes autorizados)
    - Credenciales de Aiven (`DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`)
    - Secretos JWT largos y aleatorios, **distintos** de los de staging
+   - `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` — **obligatorias en producción** para la recuperación de contraseña (spec: código por correo). Sin ellas, `POST /auth/olvide-password` responde `500`. Con Gmail: host `smtp.gmail.com`, puerto `587`, y una [contraseña de aplicación](https://myaccount.google.com/apppasswords) (no la contraseña normal de la cuenta)
 4. Crear **dos servicios** (staging apuntando a `develop`, producción a `main`) y copiar el **Deploy Hook** de cada uno (Settings → Deploy Hook) a los secretos de GitHub:
    - `RENDER_STAGING_DEPLOY_HOOK`
    - `RENDER_PROD_DEPLOY_HOOK`
@@ -66,4 +67,5 @@ Ya configurado en `.github/workflows/ci.yml`:
 - [ ] Health check configurado y monitoreado (UptimeRobot o similar contra `/api/v1/health`).
 - [ ] API Keys de capturistas generadas desde el panel y Atajos configurados (ver `docs/Guia_Atajos_iOS.md`).
 - [ ] Backup diario programado y probado (restaurar un dump en staging al menos una vez).
-- [ ] UAT con el tesorero real: capturar, cancelar con folio, conciliar y descargar el cierre del mes.
+- [ ] `SMTP_*` configurado en Render y probado con un "olvidé mi contraseña" real (revisar que el correo llegue, incluida la carpeta de spam).
+- [ ] UAT con el tesorero real: capturar, cancelar con folio, conciliar, descargar el cierre del mes y recuperar contraseña.

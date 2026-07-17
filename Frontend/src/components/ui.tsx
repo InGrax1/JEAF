@@ -1,11 +1,16 @@
 // Piezas de UI compartidas: modal, insignias, tarjetas y estados de carga.
-// Estilo alineado a Apple HIG: tipografía SF Pro, radios concéntricos,
-// objetivos táctiles de 44px, retroalimentación de presión y motion sutil.
+// Estilo alineado al sistema de diseño oficial (Stitch — "JEAF Financial
+// System"): tipografía Inter, superficies con borde + sombra ambiental,
+// radios de 8-12px (no cápsula), acentos primary/secondary/error.
 import type { ReactNode } from 'react';
 
 export function Card({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5 ${className}`}>{children}</div>
+    <div
+      className={`ambient-shadow rounded-xl border border-outline-variant bg-surface-container-lowest p-5 ${className}`}
+    >
+      {children}
+    </div>
   );
 }
 
@@ -22,24 +27,25 @@ export function Modal({
 }) {
   if (!abierto) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onCerrar}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-on-background/20 p-4 backdrop-blur-sm"
+      onClick={onCerrar}
+    >
       <div
-        className="animate-modal-in w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl"
+        className="animate-modal-in w-full max-w-md rounded-xl border border-outline-variant bg-surface-container-lowest shadow-lg"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Indicador tipo "hoja" (grabber), estilo Apple sheet */}
-        <div className="mx-auto -mt-2 mb-3 h-1.5 w-9 rounded-full bg-gray-200" aria-hidden="true" />
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-semibold">{titulo}</h3>
+        <div className="flex items-center justify-between border-b border-outline-variant px-6 py-4">
+          <h3 className="text-headline-md text-on-surface">{titulo}</h3>
           <button
             onClick={onCerrar}
-            className="flex h-8 w-8 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+            className="flex h-8 w-8 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-low hover:text-on-surface"
             aria-label="Cerrar"
           >
             ✕
           </button>
         </div>
-        {children}
+        <div className="p-6">{children}</div>
       </div>
     </div>
   );
@@ -47,46 +53,60 @@ export function Modal({
 
 export function BadgeTipo({ tipo }: { tipo: 'ingreso' | 'egreso' }) {
   return tipo === 'ingreso' ? (
-    <span className="rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-800">⬆ Ingreso</span>
+    <span className="rounded-full bg-secondary-container/30 px-2.5 py-1 text-xs font-semibold text-secondary">
+      ⬆ Ingreso
+    </span>
   ) : (
-    <span className="rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-800">⬇ Egreso</span>
+    <span className="rounded-full bg-error-container/60 px-2.5 py-1 text-xs font-semibold text-error">
+      ⬇ Egreso
+    </span>
   );
 }
 
 export function BadgeEstado({ estado }: { estado: 'activa' | 'cancelada' }) {
   return estado === 'activa' ? (
-    <span className="rounded-full bg-jeaf-100 px-2.5 py-1 text-xs font-medium text-jeaf-800">Activa</span>
+    <span className="rounded-full bg-secondary-container/30 px-2.5 py-1 text-xs font-semibold text-secondary">
+      Activa
+    </span>
   ) : (
-    <span className="rounded-full bg-gray-200 px-2.5 py-1 text-xs font-medium text-gray-600 line-through">
+    <span className="rounded-full bg-error-container/60 px-2.5 py-1 text-xs font-semibold text-error line-through">
       Cancelada
     </span>
   );
 }
 
 export function Cargando({ texto = 'Cargando…' }: { texto?: string }) {
-  return <p className="py-8 text-center text-sm text-gray-500">{texto}</p>;
+  return <p className="py-8 text-center text-sm text-on-surface-variant">{texto}</p>;
 }
 
 export function MensajeError({ mensaje }: { mensaje: string }) {
   return (
-    <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700">{mensaje}</div>
+    <div className="rounded-lg border border-error/30 bg-error-container/60 px-4 py-2.5 text-sm text-on-error-container">
+      {mensaje}
+    </div>
   );
 }
 
-// Input estilo Apple: relleno tenue en vez de borde visible, radio 12px,
-// altura mínima de 44px (objetivo táctil) y anillo de foco en el acento de marca.
+// Input: relleno de superficie, borde sutil, radio 8px, altura mínima de
+// 44px (objetivo táctil) y anillo de foco en negro institucional (primary).
 export const inputCls =
-  'w-full min-h-11 rounded-xl bg-gray-50 px-3.5 py-2 text-sm text-gray-900 placeholder:text-gray-400 ' +
-  'transition-shadow duration-150 focus:outline-none focus:ring-4 focus:ring-jeaf-500/20';
+  'w-full min-h-11 rounded-lg border border-outline-variant bg-surface px-3.5 py-2 text-sm text-on-surface placeholder:text-on-surface-variant/60 ' +
+  'transition-shadow duration-150 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary';
 
-// Botón primario: forma de cápsula, 44px de alto, retroalimentación de presión (scale)
+// Botón primario: negro institucional sólido, radio 8px, retroalimentación de presión (scale)
 export const btnPrimario =
-  'inline-flex min-h-11 items-center justify-center rounded-full bg-jeaf-600 px-5 text-sm font-semibold ' +
-  'text-white shadow-sm transition-all duration-150 ease-out hover:bg-jeaf-700 active:scale-[0.98] ' +
+  'inline-flex min-h-11 items-center justify-center rounded-lg bg-primary px-5 text-sm font-semibold ' +
+  'text-on-primary shadow-sm transition-all duration-150 ease-out hover:opacity-90 active:scale-[0.98] ' +
   'disabled:opacity-50 disabled:active:scale-100';
 
-// Botón secundario: misma cápsula, relleno tenue del acento (patrón HIG de "Secondary")
+// Botón secundario: contorno en negro institucional, fondo transparente (patrón "Secondary" del sistema)
 export const btnSecundario =
-  'inline-flex min-h-11 items-center justify-center rounded-full bg-jeaf-50 px-5 text-sm font-semibold ' +
-  'text-jeaf-700 transition-all duration-150 ease-out hover:bg-jeaf-100 active:scale-[0.98] ' +
+  'inline-flex min-h-11 items-center justify-center rounded-lg border border-primary px-5 text-sm font-semibold ' +
+  'text-primary transition-all duration-150 ease-out hover:bg-surface-container-low active:scale-[0.98] ' +
+  'disabled:opacity-50 disabled:active:scale-100';
+
+// Botón de acción destructiva (cancelar transacción, revocar, eliminar)
+export const btnPeligro =
+  'inline-flex min-h-11 items-center justify-center rounded-lg bg-error px-5 text-sm font-semibold ' +
+  'text-on-error transition-all duration-150 ease-out hover:opacity-90 active:scale-[0.98] ' +
   'disabled:opacity-50 disabled:active:scale-100';

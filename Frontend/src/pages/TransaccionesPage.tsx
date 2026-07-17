@@ -6,7 +6,7 @@ import { api } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import { formatoMoneda, formatoFecha, folioDe } from '../lib/format';
 import type { Categoria, ListaTransacciones, Transaccion } from '../lib/types';
-import { Card, Modal, BadgeTipo, BadgeEstado, Cargando, MensajeError, inputCls, btnPrimario, btnSecundario } from '../components/ui';
+import { Card, Modal, BadgeTipo, BadgeEstado, Cargando, MensajeError, inputCls, btnPrimario, btnSecundario, btnPeligro } from '../components/ui';
 
 interface Filtros {
   fechaDesde: string;
@@ -96,20 +96,20 @@ export default function TransaccionesPage() {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-bold">Transacciones</h2>
+      <h2 className="text-headline-lg text-on-surface">Transacciones</h2>
 
       <Card>
         <form onSubmit={aplicarFiltros} className="grid gap-3 sm:grid-cols-3 lg:grid-cols-7">
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-600">Desde</label>
+            <label className="mb-1 block text-label-md text-on-surface-variant">Desde</label>
             <input type="date" value={filtros.fechaDesde} onChange={(e) => setFiltros({ ...filtros, fechaDesde: e.target.value })} className={inputCls} />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-600">Hasta</label>
+            <label className="mb-1 block text-label-md text-on-surface-variant">Hasta</label>
             <input type="date" value={filtros.fechaHasta} onChange={(e) => setFiltros({ ...filtros, fechaHasta: e.target.value })} className={inputCls} />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-600">Categoría</label>
+            <label className="mb-1 block text-label-md text-on-surface-variant">Categoría</label>
             <select value={filtros.categoriaId} onChange={(e) => setFiltros({ ...filtros, categoriaId: e.target.value })} className={inputCls}>
               <option value="">Todas</option>
               {categorias.map((c) => (
@@ -118,7 +118,7 @@ export default function TransaccionesPage() {
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-600">Tipo</label>
+            <label className="mb-1 block text-label-md text-on-surface-variant">Tipo</label>
             <select value={filtros.tipo} onChange={(e) => setFiltros({ ...filtros, tipo: e.target.value })} className={inputCls}>
               <option value="">Todos</option>
               <option value="ingreso">Ingreso</option>
@@ -126,7 +126,7 @@ export default function TransaccionesPage() {
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-600">Estado</label>
+            <label className="mb-1 block text-label-md text-on-surface-variant">Estado</label>
             <select value={filtros.estado} onChange={(e) => setFiltros({ ...filtros, estado: e.target.value })} className={inputCls}>
               <option value="">Todos</option>
               <option value="activa">Activa</option>
@@ -134,7 +134,7 @@ export default function TransaccionesPage() {
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-600">Conciliada</label>
+            <label className="mb-1 block text-label-md text-on-surface-variant">Conciliada</label>
             <select value={filtros.conciliada} onChange={(e) => setFiltros({ ...filtros, conciliada: e.target.value })} className={inputCls}>
               <option value="">Todas</option>
               <option value="true">Sí</option>
@@ -158,7 +158,7 @@ export default function TransaccionesPage() {
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
+              <tr className="border-b border-outline-variant bg-surface-container-low text-left text-label-md uppercase text-on-surface-variant">
                 <th className="px-4 py-3">Fecha</th>
                 <th className="px-4 py-3">Folio</th>
                 <th className="px-4 py-3">Tipo</th>
@@ -174,18 +174,18 @@ export default function TransaccionesPage() {
             <tbody>
               {datos.items.length === 0 && (
                 <tr>
-                  <td colSpan={esAdmin ? 10 : 9} className="px-4 py-8 text-center text-gray-400">
+                  <td colSpan={esAdmin ? 10 : 9} className="px-4 py-8 text-center text-on-surface-variant">
                     Sin transacciones con los filtros actuales
                   </td>
                 </tr>
               )}
               {datos.items.map((tx) => (
-                <tr key={tx.id} className={`border-b last:border-0 ${tx.estado === 'cancelada' ? 'bg-gray-50 text-gray-400' : ''}`}>
+                <tr key={tx.id} className={`border-b border-outline-variant last:border-0 hover:bg-surface-container-low ${tx.estado === 'cancelada' ? 'bg-surface-container-low text-on-surface-variant' : ''}`}>
                   <td className="whitespace-nowrap px-4 py-2">{formatoFecha(tx.fecha_transaccion)}</td>
                   <td className="px-4 py-2 font-mono text-xs">{folioDe(tx.id)}</td>
                   <td className="px-4 py-2"><BadgeTipo tipo={tx.tipo} /></td>
                   <td className="px-4 py-2">{tx.categoria}</td>
-                  <td className={`whitespace-nowrap px-4 py-2 text-right font-semibold ${tx.estado === 'cancelada' ? '' : tx.tipo === 'ingreso' ? 'text-jeaf-600' : 'text-red-600'}`}>
+                  <td className={`whitespace-nowrap px-4 py-2 text-right font-semibold ${tx.estado === 'cancelada' ? '' : tx.tipo === 'ingreso' ? 'text-secondary' : 'text-error'}`}>
                     {formatoMoneda(tx.monto)}
                   </td>
                   <td className="px-4 py-2">{tx.capturista}</td>
@@ -199,7 +199,7 @@ export default function TransaccionesPage() {
                         type="checkbox"
                         checked={Boolean(tx.conciliada)}
                         onChange={() => alternarConciliada(tx)}
-                        className="h-4 w-4 accent-jeaf-600"
+                        className="h-4 w-4 accent-secondary"
                         title="Conciliado en banco"
                       />
                     ) : tx.conciliada ? '✓' : '—'}
@@ -209,7 +209,7 @@ export default function TransaccionesPage() {
                       {tx.estado === 'activa' && (
                         <button
                           onClick={() => { setACancelar(tx); setMotivo(''); }}
-                          className="text-xs font-medium text-red-600 hover:underline"
+                          className="text-xs font-semibold text-error hover:underline"
                         >
                           Cancelar
                         </button>
@@ -224,7 +224,7 @@ export default function TransaccionesPage() {
       </Card>
 
       {datos && (
-        <div className="flex items-center justify-between text-sm text-gray-600">
+        <div className="flex items-center justify-between text-sm text-on-surface-variant">
           <span>{datos.total} registro(s) — página {datos.page} de {totalPaginas}</span>
           <div className="flex gap-2">
             <button className={btnSecundario} disabled={page <= 1} onClick={() => setPage(page - 1)}>← Anterior</button>
@@ -236,14 +236,14 @@ export default function TransaccionesPage() {
       <Modal titulo="Cancelar transacción" abierto={aCancelar !== null} onCerrar={() => setACancelar(null)}>
         {aCancelar && (
           <div className="space-y-4">
-            <p className="text-sm text-gray-600">
-              Folio <span className="font-mono font-semibold">{folioDe(aCancelar.id)}</span> —{' '}
+            <p className="text-sm text-on-surface-variant">
+              Folio <span className="font-mono font-semibold text-on-surface">{folioDe(aCancelar.id)}</span> —{' '}
               {formatoMoneda(aCancelar.monto)} ({aCancelar.categoria}).
               <br />
               El registro no se elimina: queda marcado como cancelado con rastro de auditoría.
             </p>
             <div>
-              <label className="mb-1 block text-sm font-medium">Razón de cancelación (obligatoria)</label>
+              <label className="mb-1 block text-sm font-medium text-on-surface">Razón de cancelación (obligatoria)</label>
               <textarea
                 value={motivo}
                 onChange={(e) => setMotivo(e.target.value)}
@@ -256,7 +256,7 @@ export default function TransaccionesPage() {
             <div className="flex justify-end gap-2">
               <button className={btnSecundario} onClick={() => setACancelar(null)}>Volver</button>
               <button
-                className="inline-flex min-h-11 items-center justify-center rounded-full bg-red-600 px-5 text-sm font-semibold text-white transition-all duration-150 ease-out hover:bg-red-700 active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100"
+                className={btnPeligro}
                 disabled={motivo.trim().length < 5 || procesando}
                 onClick={confirmarCancelacion}
               >

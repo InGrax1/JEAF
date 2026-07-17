@@ -1,7 +1,7 @@
 // Inicio de sesión del panel (JWT). Tras 5 intentos fallidos por IP el
 // backend aplica rate limiting de 15 minutos.
 import { useState, type FormEvent } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ApiError } from '../lib/api';
 import { MensajeError, inputCls, btnPrimario } from '../components/ui';
@@ -31,13 +31,16 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-jeaf-900 p-4">
-      <div className="animate-modal-in w-full max-w-sm rounded-3xl bg-white p-8 shadow-2xl">
-        <h1 className="text-center text-2xl font-bold text-jeaf-800">JEAF</h1>
-        <p className="mb-6 text-center text-sm text-gray-500">Panel Administrativo</p>
+    <div className="flex min-h-screen items-center justify-center bg-primary-container p-4">
+      <div className="animate-modal-in ambient-shadow w-full max-w-sm rounded-xl border border-outline-variant bg-surface-container-lowest p-8">
+        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-lg font-bold text-on-primary">
+          J
+        </div>
+        <h1 className="text-center text-headline-lg text-on-surface">JEAF</h1>
+        <p className="mb-6 text-center text-label-md text-on-surface-variant">Panel Administrativo</p>
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
-            <label className="mb-1 block text-sm font-medium">Correo electrónico</label>
+            <label className="mb-1 block text-sm font-medium text-on-surface">Correo electrónico</label>
             <input
               type="email"
               required
@@ -48,7 +51,7 @@ export default function LoginPage() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium">Contraseña</label>
+            <label className="mb-1 block text-sm font-medium text-on-surface">Contraseña</label>
             <input
               type="password"
               required
@@ -63,6 +66,9 @@ export default function LoginPage() {
           <button type="submit" disabled={enviando} className={`${btnPrimario} w-full`}>
             {enviando ? 'Entrando…' : 'Iniciar sesión'}
           </button>
+          <Link to="/recuperar-password" className="block text-center text-sm text-primary hover:underline">
+            ¿Olvidaste tu contraseña?
+          </Link>
         </form>
       </div>
     </div>

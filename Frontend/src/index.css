@@ -1,49 +1,103 @@
 @import 'tailwindcss';
 
+/* Tokens extraídos del sistema de diseño oficial en Stitch ("JEAF Financial
+   System"): Primary (Midnight Slate, negro institucional), Secondary
+   (Vibrant Emerald, ingresos/estados activos), Error (Clear Crimson,
+   egresos/cancelaciones) y una escala de superficies gris-azulada. */
 @theme {
-  /* Verde institucional — esmeralda vívido pero serio, más saturado que el
-     tono original (mantiene el mismo matiz del acento del documento de
-     especificación, con más vida y mejor contraste) */
-  --color-jeaf-50: #e3f8ef;
-  --color-jeaf-100: #b8ecd7;
-  --color-jeaf-500: #0ea972;
-  --color-jeaf-600: #08875b;
-  --color-jeaf-700: #076b48;
-  --color-jeaf-800: #0b4f38;
-  --color-jeaf-900: #082f22;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
 
-  /* Tipografía del sistema (Apple HIG): SF Pro con fallback a system-ui */
-  --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue',
-    Arial, sans-serif;
+  --color-background: #f7f9fb;
+  --color-on-background: #191c1e;
+  --color-surface: #f7f9fb;
+  --color-surface-dim: #d8dadc;
+  --color-surface-bright: #f7f9fb;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f2f4f6;
+  --color-surface-container: #eceef0;
+  --color-surface-container-high: #e6e8ea;
+  --color-surface-container-highest: #e0e3e5;
+  --color-on-surface: #191c1e;
+  --color-on-surface-variant: #45464d;
+  --color-inverse-surface: #2d3133;
+  --color-inverse-on-surface: #eff1f3;
+  --color-outline: #76777d;
+  --color-outline-variant: #c6c6cd;
 
-  /* Escala de grises remapeada a los grises exactos de Apple (Apple HIG):
-     se propaga a todas las utilidades gray ya usadas en la app (bg, text, border) */
-  --color-gray-50: #f2f2f7; /* systemGray6 */
-  --color-gray-100: #e5e5ea; /* systemGray5 */
-  --color-gray-200: #d1d1d6; /* systemGray4 */
-  --color-gray-300: #c7c7cc; /* systemGray3 */
-  --color-gray-400: #aeaeb2; /* systemGray2 */
-  --color-gray-500: #8e8e93; /* systemGray */
-  --color-gray-600: #6e6e73;
-  --color-gray-700: #48484a;
-  --color-gray-800: #2c2c2e;
-  --color-gray-900: #1c1c1e;
+  --color-primary: #000000;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #131b2e;
+  --color-on-primary-container: #7c839b;
 
-  /* Curva de resorte de Apple para micro-interacciones (botones, modal) */
+  --color-secondary: #006c49;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #6cf8bb;
+  --color-on-secondary-container: #00714d;
+
+  --color-error: #ba1a1a;
+  --color-on-error: #ffffff;
+  --color-error-container: #ffdad6;
+  --color-on-error-container: #93000a;
+
+  /* Escala tipográfica (Inter) */
+  --text-display: 36px;
+  --text-display--line-height: 1.2;
+  --text-display--letter-spacing: -0.02em;
+  --text-display--font-weight: 700;
+
+  --text-headline-lg: 24px;
+  --text-headline-lg--line-height: 32px;
+  --text-headline-lg--letter-spacing: -0.01em;
+  --text-headline-lg--font-weight: 600;
+
+  --text-headline-md: 20px;
+  --text-headline-md--line-height: 28px;
+  --text-headline-md--font-weight: 600;
+
+  --text-body-lg: 16px;
+  --text-body-lg--line-height: 24px;
+
+  --text-body-md: 14px;
+  --text-body-md--line-height: 20px;
+
+  --text-label-md: 12px;
+  --text-label-md--line-height: 16px;
+  --text-label-md--letter-spacing: 0.05em;
+  --text-label-md--font-weight: 600;
+
+  --text-stats-lg: 30px;
+  --text-stats-lg--line-height: 36px;
+  --text-stats-lg--letter-spacing: -0.02em;
+  --text-stats-lg--font-weight: 700;
+
   --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 body {
-  @apply bg-gray-50 text-gray-900 antialiased;
+  @apply bg-background text-on-surface antialiased;
 }
 
-/* Foco accesible consistente con la marca (en vez del azul de sistema por defecto) */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+  font-size: 20px;
+  line-height: 1;
+}
+
+/* Sombra ambiental difusa: única sombra usada en el sistema (tarjetas,
+   modales), evita el "look" oscuro/pesado de Material clásico. */
+.ambient-shadow {
+  box-shadow:
+    0 4px 6px -1px rgb(0 0 0 / 0.05),
+    0 2px 4px -2px rgb(0 0 0 / 0.05);
+}
+
+/* Foco accesible consistente con la marca (negro institucional) */
 :focus-visible {
-  outline: 2px solid transparent;
-  box-shadow: 0 0 0 4px rgb(14 169 114 / 0.3);
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
-/* Respeta la preferencia de movimiento reducido (accesibilidad, Apple HIG) */
+/* Respeta la preferencia de movimiento reducido (accesibilidad) */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -64,17 +118,26 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--color-gray-300);
+  background: var(--color-outline-variant);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-gray-400);
+  background: var(--color-outline);
+}
+
+/* Override del drawer móvil en escritorio: @media clásico (no anidado) para
+   máxima compatibilidad — la variante lg:!transform-none de Tailwind v4 genera
+   @media anidado dentro del selector, que algunos motores no evalúan bien. */
+@media (min-width: 1024px) {
+  .sidebar-desktop-visible {
+    transform: none !important;
+  }
 }
 
 @keyframes modal-in {
   from {
     opacity: 0;
-    transform: scale(0.96) translateY(4px);
+    transform: scale(0.97) translateY(4px);
   }
   to {
     opacity: 1;
@@ -82,5 +145,5 @@ body {
   }
 }
 .animate-modal-in {
-  animation: modal-in 200ms var(--ease-spring);
+  animation: modal-in 180ms var(--ease-spring);
 }

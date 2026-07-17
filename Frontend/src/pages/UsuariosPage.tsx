@@ -95,7 +95,7 @@ export default function UsuariosPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold">Usuarios</h2>
+        <h2 className="text-headline-lg text-on-surface">Usuarios</h2>
         <button className={btnPrimario} onClick={abrirCrear}>+ Nuevo usuario</button>
       </div>
 
@@ -107,7 +107,7 @@ export default function UsuariosPage() {
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
+              <tr className="border-b border-outline-variant bg-surface-container-low text-left text-label-md uppercase text-on-surface-variant">
                 <th className="px-4 py-3">Nombre</th>
                 <th className="px-4 py-3">Email</th>
                 <th className="px-4 py-3">Rol</th>
@@ -117,30 +117,30 @@ export default function UsuariosPage() {
             </thead>
             <tbody>
               {usuarios.map((u) => (
-                <tr key={u.id} className={`border-b last:border-0 ${!u.activo ? 'text-gray-400' : ''}`}>
+                <tr key={u.id} className={`border-b border-outline-variant last:border-0 hover:bg-surface-container-low ${!u.activo ? 'text-on-surface-variant' : ''}`}>
                   <td className="px-4 py-2 font-medium">
                     {u.nombre}
-                    {u.id === sesion?.id && <span className="ml-2 text-xs text-jeaf-600">(tú)</span>}
+                    {u.id === sesion?.id && <span className="ml-2 text-xs text-secondary">(tú)</span>}
                   </td>
                   <td className="px-4 py-2">{u.email}</td>
                   <td className="px-4 py-2">{ETIQUETA_ROL[u.rol]}</td>
                   <td className="px-4 py-2">
                     {u.activo ? (
-                      <span className="rounded-full bg-jeaf-100 px-2 py-0.5 text-xs font-medium text-jeaf-800">Activo</span>
+                      <span className="rounded-full bg-secondary-container/30 px-2 py-0.5 text-xs font-semibold text-secondary">Activo</span>
                     ) : (
-                      <span className="rounded-full bg-gray-200 px-2 py-0.5 text-xs font-medium text-gray-600">Inactivo</span>
+                      <span className="rounded-full bg-surface-container-high px-2 py-0.5 text-xs font-medium text-on-surface-variant">Inactivo</span>
                     )}
                   </td>
                   <td className="px-4 py-2 text-right text-xs">
-                    <button className="mr-3 font-medium text-jeaf-600 hover:underline" onClick={() => abrirEditar(u)}>
+                    <button className="mr-3 font-semibold text-primary hover:underline" onClick={() => abrirEditar(u)}>
                       Editar
                     </button>
                     {u.id !== sesion?.id && (
                       <>
-                        <button className="mr-3 font-medium text-amber-600 hover:underline" onClick={() => alternarActivo(u)}>
+                        <button className="mr-3 font-semibold text-amber-600 hover:underline" onClick={() => alternarActivo(u)}>
                           {u.activo ? 'Desactivar' : 'Activar'}
                         </button>
-                        <button className="font-medium text-red-600 hover:underline" onClick={() => eliminar(u)}>
+                        <button className="font-semibold text-error hover:underline" onClick={() => eliminar(u)}>
                           Eliminar
                         </button>
                       </>
@@ -160,15 +160,15 @@ export default function UsuariosPage() {
       >
         <form onSubmit={guardar} className="space-y-4">
           <div>
-            <label className="mb-1 block text-sm font-medium">Nombre</label>
+            <label className="mb-1 block text-sm font-medium text-on-surface">Nombre</label>
             <input required minLength={2} value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} className={inputCls} />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium">Email</label>
+            <label className="mb-1 block text-sm font-medium text-on-surface">Email</label>
             <input type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className={inputCls} />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium">
+            <label className="mb-1 block text-sm font-medium text-on-surface">
               {editando ? 'Nueva contraseña (dejar vacío para no cambiar)' : 'Contraseña'}
             </label>
             <input
@@ -182,7 +182,7 @@ export default function UsuariosPage() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium">Rol (único por usuario)</label>
+            <label className="mb-1 block text-sm font-medium text-on-surface">Rol (único por usuario)</label>
             <select value={form.rol} onChange={(e) => setForm({ ...form, rol: e.target.value as Rol })} className={inputCls}>
               <option value="capturista">Auxiliar de Captura</option>
               <option value="auditor">Auditor</option>

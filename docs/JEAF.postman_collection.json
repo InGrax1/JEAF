@@ -7,7 +7,9 @@
   "variable": [
     { "key": "base_url", "value": "http://localhost:3000/api/v1" },
     { "key": "email", "value": "tesorero@jeaf.local" },
-    { "key": "password", "value": "CambiarAlEntrar1!" },
+    { "key": "password", "value": "" },
+    { "key": "new_password", "value": "" },
+    { "key": "user_password", "value": "" },
     { "key": "access_token", "value": "" },
     { "key": "refresh_token", "value": "" },
     { "key": "api_key", "value": "" },
@@ -57,6 +59,24 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "url": "{{base_url}}/auth/refresh",
             "body": { "mode": "raw", "raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}" }
+          }
+        },
+        {
+          "name": "Olvidé mi contraseña (solicitar código)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/auth/olvide-password",
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{email}}\"\n}" }
+          }
+        },
+        {
+          "name": "Restablecer contraseña (con código del correo)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/auth/restablecer-password",
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{email}}\",\n  \"codigo\": \"PEGAR-CODIGO-DE-6-DIGITOS\",\n  \"password\": \"{{new_password}}\"\n}" }
           }
         }
       ]
@@ -192,7 +212,7 @@
               { "key": "Authorization", "value": "Bearer {{access_token}}" }
             ],
             "url": "{{base_url}}/usuarios",
-            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Voluntario Conteo\",\n  \"email\": \"voluntario@jeaf.local\",\n  \"password\": \"Password123!\",\n  \"rol\": \"capturista\"\n}" }
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Voluntario Conteo\",\n  \"email\": \"voluntario@jeaf.local\",\n  \"password\": \"{{user_password}}\",\n  \"rol\": \"capturista\"\n}" }
           }
         },
         {

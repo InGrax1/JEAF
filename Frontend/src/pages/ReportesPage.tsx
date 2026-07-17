@@ -35,11 +35,11 @@ export default function ReportesPage() {
 
   return (
     <div className="max-w-2xl space-y-4">
-      <h2 className="text-xl font-bold">Cierres y reportes</h2>
+      <h2 className="text-headline-lg text-on-surface">Cierres y reportes</h2>
 
       <Card className="space-y-4">
         <div>
-          <label className="mb-1 block text-sm font-medium">Mes del cierre</label>
+          <label className="mb-1 block text-sm font-medium text-on-surface">Mes del cierre</label>
           <input
             type="month"
             value={periodo}
@@ -60,13 +60,13 @@ export default function ReportesPage() {
 
         {error && <MensajeError mensaje={error} />}
         {ultimo && !error && (
-          <p className="rounded border border-jeaf-100 bg-jeaf-50 px-4 py-2 text-sm text-jeaf-800">✓ {ultimo}</p>
+          <p className="rounded-lg border border-secondary/30 bg-secondary-container/30 px-4 py-2 text-sm text-on-secondary-container">✓ {ultimo}</p>
         )}
       </Card>
 
       <Card>
-        <h3 className="mb-2 text-sm font-semibold text-gray-700">Contenido del reporte</h3>
-        <ul className="list-inside list-disc space-y-1 text-sm text-gray-600">
+        <h3 className="mb-2 text-headline-md text-primary">Contenido del reporte</h3>
+        <ul className="list-inside list-disc space-y-1 text-sm text-on-surface-variant">
           <li>Resumen del mes: total de ingresos, egresos y resultado.</li>
           <li>Desglose por categoría con número de movimientos.</li>
           <li>Detalle completo de movimientos activos (folio, capturista, conciliación).</li>

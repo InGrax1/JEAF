@@ -1,6 +1,6 @@
 {
   "name": "jeaf-frontend",
-  "version": "0.2.1",
+  "version": "0.2.4",
   "description": "JEAF — Panel Administrativo Web",
   "private": true,
   "type": "module",

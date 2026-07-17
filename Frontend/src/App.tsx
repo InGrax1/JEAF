@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import Layout from './components/Layout';
 import LoginPage from './pages/LoginPage';
+import RecuperarPasswordPage from './pages/RecuperarPasswordPage';
 import DashboardPage from './pages/DashboardPage';
 import TransaccionesPage from './pages/TransaccionesPage';
 import ReportesPage from './pages/ReportesPage';
@@ -24,6 +25,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/recuperar-password" element={<RecuperarPasswordPage />} />
       <Route
         element={
           <Protegida>

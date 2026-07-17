@@ -8,8 +8,30 @@ Versionado alineado a las fases de desarrollo de la especificación JEAF v1.2.
 
 ## [No publicado]
 
+### Corregido
+- **Panel no responsivo en móvil**: la barra lateral (`Layout.tsx`) era fija de 280px sin colapsar, dejando menos de la mitad de la pantalla útil en dispositivos angostos. Ahora es un drawer deslizable en móvil/tablet (oculto por defecto, con barra superior y botón de menú) y vuelve a ser persistente en escritorio (`lg:` y superior, ≥1024px), tal como especifica el sistema de diseño oficial ("persistent left sidebar (280px)" solo para desktop — no hay pantalla móvil oficial en el proyecto de Stitch, así que el patrón de drawer es una implementación estándar propia). Márgenes de página también responsivos (16px móvil / 32px escritorio, spec del sistema de diseño).
+- Corregido un bug real en el camino: dos clases de Tailwind (`-translate-x-full` y `translate-x-0`) compitiendo por la misma propiedad en el mismo elemento — el empate lo resuelve el orden de generación de Tailwind, no el orden en el HTML, así que la de "cerrado" siempre ganaba. Se resolvió moviendo la posición a un estilo inline controlado por React, con el override de escritorio en un `@media` clásico en `index.css` (evitando además la sintaxis de CSS anidado de Tailwind v4 para `lg:!` + media, que un motor de navegador de esta sesión no evaluaba correctamente).
+
+### Cambiado
+- **Rediseño visual completo alineado al sistema de diseño oficial en Stitch** ("JEAF Financial System"): tokens de color (`primary` negro institucional, `secondary` verde esmeralda, `error` carmesí, escala de superficies `surface-container-*`), tipografía Inter con escala `display`/`headline-lg`/`headline-md`/`body-lg`/`body-md`/`label-md`/`stats-lg`, radios de 8-12px (no cápsula) y sombra ambiental difusa — todo definido en `index.css` vía `@theme` de Tailwind 4.
+- **Componentes compartidos** (`src/components/ui.tsx`): `Card`, `Modal`, badges, `inputCls`, `btnPrimario`/`btnSecundario` reescritos sobre los nuevos tokens; se agrega `btnPeligro` para acciones destructivas (cancelar transacción, revocar, eliminar).
+- **Barra lateral** (`Layout.tsx`): iconografía Material Symbols, resaltado de ítem activo en verde (`secondary-container`), footer con usuario/rol y cierre de sesión.
+- Reestilizadas todas las páginas (Dashboard, Transacciones, Reportes, Categorías, Usuarios, API Keys, Login, Recuperar contraseña) sobre los componentes compartidos, sin tocar lógica de negocio ni llamadas a la API.
+- Se agregó la fuente Inter y Material Symbols Outlined vía Google Fonts en `index.html`.
+
 ### Pendiente
 - Despliegue efectivo a Vercel (requiere cuenta — ver `docs/Despliegue.md`).
+
+---
+
+## [0.2.4] — 2026-07-10 — Recuperación de contraseña
+
+### Agregado
+- **Página `/recuperar-password`** (pública, sin sesión): flujo en 2 pasos — solicitar código por correo, luego verificarlo junto con la nueva contraseña (con confirmación). Mensaje genérico consistente con el backend (no revela si el correo existe).
+- Enlace "¿Olvidaste tu contraseña?" en la pantalla de login.
+
+### Verificado
+- Flujo completo probado en navegador contra el backend real: solicitud de código, verificación, redirección a login y acceso exitoso con la nueva contraseña.
 
 ---
 

@@ -8,6 +8,13 @@ Guía de negocio (spec 9.2) para la operación diaria y el cierre mensual del pa
 2. Tu sesión dura 1 hora y se renueva sola mientras trabajas (hasta 7 días). Al terminar, usa **Cerrar sesión**.
 3. Si fallas la contraseña 5 veces, el sistema bloquea los intentos por 15 minutos (protección contra ataques).
 
+### ¿Olvidaste tu contraseña?
+
+1. En la pantalla de inicio de sesión, toca **"¿Olvidaste tu contraseña?"**.
+2. Escribe tu correo. Si tienes una cuenta, te llegará un **código de 6 dígitos** válido por 15 minutos (revisa spam si no lo ves).
+3. Ingresa el código junto con tu nueva contraseña (mínimo 8 caracteres) y confírmala.
+4. El código solo sirve una vez y admite máximo 5 intentos — si te equivocas demasiadas veces o se te vence, solicita uno nuevo.
+
 ## Operación diaria
 
 ### Registrar movimientos

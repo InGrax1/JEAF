@@ -36,3 +36,6 @@ skills-lock.json
 # versionar. schema.sql SÍ se versiona: solo define tablas, sin datos.
 seed.sql
 
+
+# Added by ggshield
+.cache_ggshield

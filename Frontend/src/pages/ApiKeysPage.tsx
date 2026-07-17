@@ -71,7 +71,7 @@ export default function ApiKeysPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold">API Keys — Atajos de iOS</h2>
+        <h2 className="text-headline-lg text-on-surface">API Keys — Atajos de iOS</h2>
         <button className={btnPrimario} onClick={() => setModalAbierto(true)}>+ Generar API Key</button>
       </div>
 
@@ -83,7 +83,7 @@ export default function ApiKeysPage() {
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
+              <tr className="border-b border-outline-variant bg-surface-container-low text-left text-label-md uppercase text-on-surface-variant">
                 <th className="px-4 py-3">Etiqueta</th>
                 <th className="px-4 py-3">Usuario</th>
                 <th className="px-4 py-3">Prefijo</th>
@@ -96,11 +96,11 @@ export default function ApiKeysPage() {
             <tbody>
               {keys.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-gray-400">Aún no hay API keys generadas</td>
+                  <td colSpan={7} className="px-4 py-8 text-center text-on-surface-variant">Aún no hay API keys generadas</td>
                 </tr>
               )}
               {keys.map((k) => (
-                <tr key={k.id} className={`border-b last:border-0 ${k.revoked_at ? 'text-gray-400' : ''}`}>
+                <tr key={k.id} className={`border-b border-outline-variant last:border-0 hover:bg-surface-container-low ${k.revoked_at ? 'text-on-surface-variant' : ''}`}>
                   <td className="px-4 py-2 font-medium">{k.etiqueta}</td>
                   <td className="px-4 py-2">{k.usuario_nombre}</td>
                   <td className="px-4 py-2 font-mono text-xs">{k.key_prefix}…</td>
@@ -108,18 +108,18 @@ export default function ApiKeysPage() {
                   <td className="px-4 py-2">{formatoFecha(k.last_used_at)}</td>
                   <td className="px-4 py-2">
                     {k.revoked_at ? (
-                      <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
+                      <span className="rounded-full bg-error-container/60 px-2 py-0.5 text-xs font-semibold text-error">
                         Revocada
                       </span>
                     ) : (
-                      <span className="rounded-full bg-jeaf-100 px-2 py-0.5 text-xs font-medium text-jeaf-800">
+                      <span className="rounded-full bg-secondary-container/30 px-2 py-0.5 text-xs font-semibold text-secondary">
                         Activa
                       </span>
                     )}
                   </td>
                   <td className="px-4 py-2 text-right text-xs">
                     {!k.revoked_at && (
-                      <button className="font-medium text-red-600 hover:underline" onClick={() => revocar(k)}>
+                      <button className="font-semibold text-error hover:underline" onClick={() => revocar(k)}>
                         Revocar
                       </button>
                     )}
@@ -134,10 +134,10 @@ export default function ApiKeysPage() {
       <Modal titulo={keyGenerada ? 'API Key generada' : 'Generar API Key'} abierto={modalAbierto} onCerrar={cerrarModal}>
         {keyGenerada ? (
           <div className="space-y-4">
-            <div className="rounded border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
               ⚠️ Guarda esta key ahora: <strong>no volverá a mostrarse</strong>. Pégala en el Atajo de iOS del capturista.
             </div>
-            <code className="block break-all rounded bg-gray-900 px-4 py-3 font-mono text-xs text-green-300">
+            <code className="block break-all rounded-lg bg-inverse-surface px-4 py-3 font-mono text-xs text-secondary-container">
               {keyGenerada}
             </code>
             <div className="flex justify-end gap-2">
@@ -148,7 +148,7 @@ export default function ApiKeysPage() {
         ) : (
           <form onSubmit={generar} className="space-y-4">
             <div>
-              <label className="mb-1 block text-sm font-medium">Usuario (capturista)</label>
+              <label className="mb-1 block text-sm font-medium text-on-surface">Usuario (capturista)</label>
               <select
                 required
                 value={form.usuarioId}
@@ -162,7 +162,7 @@ export default function ApiKeysPage() {
               </select>
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium">Etiqueta del dispositivo</label>
+              <label className="mb-1 block text-sm font-medium text-on-surface">Etiqueta del dispositivo</label>
               <input
                 required
                 minLength={2}

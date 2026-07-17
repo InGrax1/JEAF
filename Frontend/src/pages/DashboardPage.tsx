@@ -19,14 +19,14 @@ import { formatoMoneda, formatoMes } from '../lib/format';
 import type { DashboardResumen } from '../lib/types';
 import { Card, Cargando, MensajeError } from '../components/ui';
 
-const COLORES = ['#08875b', '#0ea972', '#3fc38f', '#7ad9b3', '#c3ecd9', '#e0a030', '#c0392b', '#64748b'];
+const COLORES = ['#006c49', '#0ea972', '#3fc38f', '#7ad9b3', '#c3ecd9', '#e0a030', '#ba1a1a', '#76777d'];
 
 function TarjetaCifra({ titulo, valor, tono }: { titulo: string; valor: number; tono?: 'verde' | 'rojo' }) {
-  const color = tono === 'verde' ? 'text-jeaf-600' : tono === 'rojo' ? 'text-red-600' : 'text-gray-900';
+  const color = tono === 'verde' ? 'text-secondary' : tono === 'rojo' ? 'text-error' : 'text-primary';
   return (
     <Card>
-      <p className="text-xs font-medium uppercase tracking-wide text-gray-500">{titulo}</p>
-      <p className={`mt-1 text-2xl font-bold ${color}`}>{formatoMoneda(valor)}</p>
+      <p className="text-label-md uppercase text-on-surface-variant">{titulo}</p>
+      <p className={`mt-1 text-stats-lg ${color}`}>{formatoMoneda(valor)}</p>
     </Card>
   );
 }
@@ -35,9 +35,9 @@ function PieCategorias({ datos, titulo }: { datos: { categoria: string; total: n
   const total = datos.reduce((s, d) => s + d.total, 0);
   return (
     <Card>
-      <h3 className="mb-2 text-sm font-semibold text-gray-700">{titulo}</h3>
+      <h3 className="mb-2 text-headline-md text-primary">{titulo}</h3>
       {datos.length === 0 ? (
-        <p className="py-10 text-center text-sm text-gray-400">Sin movimientos este mes</p>
+        <p className="py-10 text-center text-sm text-on-surface-variant">Sin movimientos este mes</p>
       ) : (
         <>
           <ResponsiveContainer width="100%" height={220}>
@@ -50,14 +50,14 @@ function PieCategorias({ datos, titulo }: { datos: { categoria: string; total: n
               <Tooltip formatter={(v) => formatoMoneda(Number(v))} />
             </PieChart>
           </ResponsiveContainer>
-          <ul className="mt-2 space-y-1 text-xs">
+          <ul className="mt-2 space-y-1 text-sm">
             {datos.map((d, i) => (
               <li key={d.categoria} className="flex items-center justify-between">
-                <span className="flex items-center gap-2">
+                <span className="flex items-center gap-2 text-on-surface">
                   <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: COLORES[i % COLORES.length] }} />
                   {d.categoria}
                 </span>
-                <span className="font-medium">
+                <span className="font-semibold text-on-surface-variant">
                   {total > 0 ? `${((d.total / total) * 100).toFixed(1)}%` : '—'} · {formatoMoneda(d.total)}
                 </span>
               </li>
@@ -88,7 +88,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-bold">Dashboard financiero</h2>
+      <h2 className="text-headline-lg text-on-surface">Dashboard financiero</h2>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <TarjetaCifra titulo="Flujo de caja (balance total)" valor={resumen.balanceTotal} />
@@ -102,16 +102,16 @@ export default function DashboardPage() {
       </div>
 
       <Card>
-        <h3 className="mb-2 text-sm font-semibold text-gray-700">Ingresos vs egresos — últimos 12 meses</h3>
+        <h3 className="mb-2 text-headline-md text-primary">Ingresos vs egresos — últimos 12 meses</h3>
         <ResponsiveContainer width="100%" height={280}>
           <BarChart data={serie}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} />
-            <XAxis dataKey="mes" fontSize={12} />
-            <YAxis fontSize={12} tickFormatter={(v) => `$${Number(v).toLocaleString()}`} />
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#c6c6cd" />
+            <XAxis dataKey="mes" fontSize={12} stroke="#45464d" />
+            <YAxis fontSize={12} stroke="#45464d" tickFormatter={(v) => `$${Number(v).toLocaleString()}`} />
             <Tooltip formatter={(v) => formatoMoneda(Number(v))} />
             <Legend />
-            <Bar dataKey="ingresos" name="Ingresos" fill="#08875b" radius={[3, 3, 0, 0]} />
-            <Bar dataKey="egresos" name="Egresos" fill="#c0392b" radius={[3, 3, 0, 0]} />
+            <Bar dataKey="ingresos" name="Ingresos" fill="#006c49" radius={[3, 3, 0, 0]} />
+            <Bar dataKey="egresos" name="Egresos" fill="#ba1a1a" radius={[3, 3, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </Card>
