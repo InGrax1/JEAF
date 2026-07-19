@@ -5,7 +5,7 @@
 import { useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import imagotipo from '../assets/Imagotipo.png';
+import imagotipo from '../assets/imagotipo.png';
 
 const ETIQUETA_ROL: Record<string, string> = {
   super_admin: 'Tesorero',
