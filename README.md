@@ -1,3 +1,5 @@
+<p align="center"><img src="docs/logo/Imagotipo.svg" alt="JEAF" width="280"></p>
+
 # JEAF — Plataforma de Gestión Financiera y Contable para Iglesias
 
 Sistema transaccional interno single-tenant para automatizar el registro, control y auditoría de ingresos (ofrendas, diezmos, donaciones) y gastos. Basado en la especificación **JEAF v1.2** ([docs/JEAF_Especificacion_v1_2.docx](docs/JEAF_Especificacion_v1_2.docx)).
@@ -28,8 +30,12 @@ Sistema transaccional interno single-tenant para automatizar el registro, contro
 JEAF/
 ├── Backend/    → API REST (ver Backend/CHANGELOG.md)
 ├── Frontend/   → Panel administrativo SPA (ver Frontend/CHANGELOG.md) — inicia en FASE 2
-└── docs/       → Especificación del proyecto
+└── docs/       → Especificación del proyecto y marca (docs/logo/)
 ```
+
+### Marca
+
+Los archivos fuente del logotipo viven en [docs/logo](docs/logo): **imagotipo** (icono + wordmark "JEAF", `Imagotipo.svg`) para contextos con espacio horizontal — login, recuperación de contraseña, barra lateral y encabezado móvil del panel — e **isotipo** (solo el icono, `Isotipo.png`) para contextos de icono puro — favicon, icono de instalación PWA/iOS y app icons.
 
 ## Fases de desarrollo
 

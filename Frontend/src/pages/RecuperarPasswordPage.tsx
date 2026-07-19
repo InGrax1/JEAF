@@ -5,6 +5,7 @@ import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api, ApiError } from '../lib/api';
 import { MensajeError, inputCls, btnPrimario, btnSecundario } from '../components/ui';
+import imagotipo from '../assets/imagotipo.png';
 
 export default function RecuperarPasswordPage() {
   const navigate = useNavigate();
@@ -60,10 +61,7 @@ export default function RecuperarPasswordPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-primary-container p-4">
       <div className="animate-modal-in ambient-shadow w-full max-w-sm rounded-xl border border-outline-variant bg-surface-container-lowest p-8">
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-lg font-bold text-on-primary">
-          J
-        </div>
-        <h1 className="text-center text-headline-lg text-on-surface">JEAF</h1>
+        <img src={imagotipo} alt="JEAF" className="mx-auto mb-4 h-16 w-auto" />
         <p className="mb-6 text-center text-label-md text-on-surface-variant">
           {paso === 'solicitar' ? 'Recuperar contraseña' : 'Verificar código'}
         </p>

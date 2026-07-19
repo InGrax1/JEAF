@@ -5,6 +5,7 @@
 import { useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import imagotipo from '../assets/Imagotipo.png';
 
 const ETIQUETA_ROL: Record<string, string> = {
   super_admin: 'Tesorero',
@@ -35,10 +36,7 @@ export default function Layout() {
           navegador normal, así que no afecta ahí). */}
       <header className="flex items-center justify-between border-b border-outline-variant bg-surface-container-lowest px-4 pb-3 pt-[calc(0.75rem_+_env(safe-area-inset-top))] lg:hidden">
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-bold text-on-primary">
-            J
-          </div>
-          <h1 className="text-headline-md font-black text-primary">JEAF</h1>
+          <img src={imagotipo} alt="JEAF" className="h-10 w-auto" />
         </div>
         <button
           onClick={() => setMenuAbierto(true)}
@@ -69,14 +67,9 @@ export default function Layout() {
         className="sidebar-desktop-visible fixed inset-y-0 left-0 z-40 flex w-[280px] shrink-0 flex-col border-r border-outline-variant bg-surface-container-lowest px-4 pt-[calc(1rem_+_env(safe-area-inset-top))] pb-[calc(1rem_+_env(safe-area-inset-bottom))] transition-transform duration-300 ease-out lg:sticky lg:top-0 lg:z-auto lg:h-screen"
       >
         <div className="mb-6 flex items-center justify-between gap-3 px-2 py-2">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-bold text-on-primary">
-              J
-            </div>
-            <div>
-              <h1 className="text-headline-md font-black text-primary">JEAF</h1>
-              <p className="text-label-md text-on-surface-variant">Gestión financiera</p>
-            </div>
+          <div className="flex flex-col gap-1">
+            <img src={imagotipo} alt="JEAF" className="h-20 w-auto" />
+            <p className="text-label-md text-on-surface-variant">Gestión financiera</p>
           </div>
           <button
             onClick={() => setMenuAbierto(false)}
