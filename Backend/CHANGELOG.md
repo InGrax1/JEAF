@@ -8,6 +8,9 @@ Versionado alineado a las fases de desarrollo de la especificación JEAF v1.2.
 
 ## [No publicado]
 
+### Cambiado
+- **Diseño del correo de recuperación de contraseña** (`utils/emailTemplates.js`, nuevo): antes era un `<p>` suelto con el código; ahora es una plantilla con estructura de tabla + estilos inline (lo único que renderizan de forma consistente Gmail/Outlook/Apple Mail — nada de `<style>` con clases ni flexbox/grid), con encabezado de marca, el código resaltado en una tarjeta con acento del verde institucional, nota de expiración y aviso de seguridad. El logo va como texto estilizado (no imagen): evita el ícono roto mientras el cliente de correo bloquea imágenes por defecto, justo en un correo cuyo contenido crítico debe verse sí o sí. `auth.service.js` ahora arma el correo con `plantillaCodigoRecuperacion({ codigo, minutos })` en vez de construir el HTML a mano.
+
 ### Pendiente
 - UAT con el tesorero real y despliegue efectivo a Render/Vercel/Aiven (requiere cuentas y credenciales — ver `docs/Despliegue.md`).
 - Configurar variables `SMTP_*` en Render para que la recuperación de contraseña envíe correos reales en producción (ver más abajo).

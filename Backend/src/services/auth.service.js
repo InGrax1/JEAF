@@ -10,6 +10,7 @@ const usuariosRepository = require('../repositories/usuarios.repository');
 const codigosRecuperacionRepository = require('../repositories/codigosRecuperacion.repository');
 const auditService = require('./audit.service');
 const emailUtil = require('../utils/email');
+const { plantillaCodigoRecuperacion } = require('../utils/emailTemplates');
 const { AppError } = require('../utils/errors');
 
 const CODIGO_EXPIRA_MINUTOS = 15;
@@ -93,17 +94,11 @@ async function olvidePassword({ email }, contexto) {
     expiraEn,
   });
 
-  await emailUtil.enviarCorreo({
-    para: usuario.email,
-    asunto: 'Código para restablecer tu contraseña — JEAF',
-    textoPlano:
-      `Tu código de verificación es: ${codigo}\n\n` +
-      `Expira en ${CODIGO_EXPIRA_MINUTOS} minutos. Si no solicitaste este cambio, ignora este correo.`,
-    html:
-      `<p>Tu código de verificación es:</p>` +
-      `<p style="font-size:28px; font-weight:bold; letter-spacing:4px;">${codigo}</p>` +
-      `<p>Expira en ${CODIGO_EXPIRA_MINUTOS} minutos. Si no solicitaste este cambio, ignora este correo.</p>`,
+  const { asunto, html, textoPlano } = plantillaCodigoRecuperacion({
+    codigo,
+    minutos: CODIGO_EXPIRA_MINUTOS,
   });
+  await emailUtil.enviarCorreo({ para: usuario.email, asunto, html, textoPlano });
 
   return { mensaje: MENSAJE_GENERICO };
 }
