@@ -3,6 +3,7 @@
 // System"): tipografía Inter, superficies con borde + sombra ambiental,
 // radios de 8-12px (no cápsula), acentos primary/secondary/error.
 import type { ReactNode } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 
 export function Card({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
@@ -25,29 +26,43 @@ export function Modal({
   onCerrar: () => void;
   children: ReactNode;
 }) {
-  if (!abierto) return null;
+  // AnimatePresence vive dentro del componente (no en el llamador) para que
+  // el cierre también anime: los llamadores solo alternan `abierto`, nunca
+  // dejan de renderizar <Modal>.
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-on-background/20 p-4 backdrop-blur-sm"
-      onClick={onCerrar}
-    >
-      <div
-        className="animate-modal-in w-full max-w-md rounded-xl border border-outline-variant bg-surface-container-lowest shadow-lg"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between border-b border-outline-variant px-6 py-4">
-          <h3 className="text-headline-md text-on-surface">{titulo}</h3>
-          <button
-            onClick={onCerrar}
-            className="flex h-8 w-8 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-low hover:text-on-surface"
-            aria-label="Cerrar"
+    <AnimatePresence>
+      {abierto && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.15 }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-on-background/20 p-4 backdrop-blur-sm"
+          onClick={onCerrar}
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 12 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 12 }}
+            transition={{ type: 'spring', stiffness: 340, damping: 28 }}
+            className="w-full max-w-md rounded-xl border border-outline-variant bg-surface-container-lowest shadow-lg"
+            onClick={(e) => e.stopPropagation()}
           >
-            ✕
-          </button>
-        </div>
-        <div className="p-6">{children}</div>
-      </div>
-    </div>
+            <div className="flex items-center justify-between border-b border-outline-variant px-6 py-4">
+              <h3 className="text-headline-md text-on-surface">{titulo}</h3>
+              <button
+                onClick={onCerrar}
+                className="flex h-8 w-8 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-low hover:text-on-surface"
+                aria-label="Cerrar"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="p-6">{children}</div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 
@@ -81,9 +96,14 @@ export function Cargando({ texto = 'Cargando…' }: { texto?: string }) {
 
 export function MensajeError({ mensaje }: { mensaje: string }) {
   return (
-    <div className="rounded-lg border border-error/30 bg-error-container/60 px-4 py-2.5 text-sm text-on-error-container">
+    <motion.div
+      initial={{ opacity: 0, y: -6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: 'easeOut' }}
+      className="rounded-lg border border-error/30 bg-error-container/60 px-4 py-2.5 text-sm text-on-error-container"
+    >
       {mensaje}
-    </div>
+    </motion.div>
   );
 }
 

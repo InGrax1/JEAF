@@ -2,6 +2,7 @@
 // backend aplica rate limiting de 15 minutos.
 import { useState, type FormEvent } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { motion } from 'motion/react';
 import { useAuth } from '../context/AuthContext';
 import { ApiError } from '../lib/api';
 import { MensajeError, inputCls, btnPrimario } from '../components/ui';
@@ -33,7 +34,12 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-primary-container p-4">
-      <div className="animate-modal-in ambient-shadow w-full max-w-sm rounded-xl border border-outline-variant bg-surface-container-lowest p-8">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.97, y: 4 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ type: 'spring', stiffness: 260, damping: 24 }}
+        className="ambient-shadow w-full max-w-sm rounded-xl border border-outline-variant bg-surface-container-lowest p-8"
+      >
         <img src={imagotipo} alt="JEAF" className="mx-auto mb-4 h-16 w-auto" />
         <p className="mb-6 text-center text-label-md text-on-surface-variant">Panel Administrativo</p>
         <form onSubmit={onSubmit} className="space-y-4">
@@ -68,7 +74,7 @@ export default function LoginPage() {
             ¿Olvidaste tu contraseña?
           </Link>
         </form>
-      </div>
+      </motion.div>
     </div>
   );
 }

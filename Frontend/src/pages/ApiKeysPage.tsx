@@ -1,6 +1,7 @@
 // Gestión de API Keys para los Atajos de iOS (spec 3.3 y 10.3):
 // generar (la key se muestra UNA sola vez) y revocar con efecto inmediato.
 import { useEffect, useState, type FormEvent } from 'react';
+import { motion } from 'motion/react';
 import { api } from '../lib/api';
 import { formatoFecha } from '../lib/format';
 import type { ApiKey, Usuario } from '../lib/types';
@@ -99,8 +100,14 @@ export default function ApiKeysPage() {
                   <td colSpan={7} className="px-4 py-8 text-center text-on-surface-variant">Aún no hay API keys generadas</td>
                 </tr>
               )}
-              {keys.map((k) => (
-                <tr key={k.id} className={`border-b border-outline-variant last:border-0 hover:bg-surface-container-low ${k.revoked_at ? 'text-on-surface-variant' : ''}`}>
+              {keys.map((k, i) => (
+                <motion.tr
+                  key={k.id}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2, delay: Math.min(i, 12) * 0.025 }}
+                  className={`border-b border-outline-variant last:border-0 hover:bg-surface-container-low ${k.revoked_at ? 'text-on-surface-variant' : ''}`}
+                >
                   <td className="px-4 py-2 font-medium">{k.etiqueta}</td>
                   <td className="px-4 py-2">{k.usuario_nombre}</td>
                   <td className="px-4 py-2 font-mono text-xs">{k.key_prefix}…</td>
@@ -124,7 +131,7 @@ export default function ApiKeysPage() {
                       </button>
                     )}
                   </td>
-                </tr>
+                </motion.tr>
               ))}
             </tbody>
           </table>

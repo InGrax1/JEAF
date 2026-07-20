@@ -1,6 +1,7 @@
 // Gestión de usuarios (spec 3.3): alta con rol único, edición, activar/desactivar
 // y baja lógica. Exclusivo del Tesorero (super_admin).
 import { useEffect, useState, type FormEvent } from 'react';
+import { motion } from 'motion/react';
 import { api } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import type { Rol, Usuario } from '../lib/types';
@@ -116,8 +117,14 @@ export default function UsuariosPage() {
               </tr>
             </thead>
             <tbody>
-              {usuarios.map((u) => (
-                <tr key={u.id} className={`border-b border-outline-variant last:border-0 hover:bg-surface-container-low ${!u.activo ? 'text-on-surface-variant' : ''}`}>
+              {usuarios.map((u, i) => (
+                <motion.tr
+                  key={u.id}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2, delay: Math.min(i, 12) * 0.025 }}
+                  className={`border-b border-outline-variant last:border-0 hover:bg-surface-container-low ${!u.activo ? 'text-on-surface-variant' : ''}`}
+                >
                   <td className="px-4 py-2 font-medium">
                     {u.nombre}
                     {u.id === sesion?.id && <span className="ml-2 text-xs text-secondary">(tú)</span>}
@@ -146,7 +153,7 @@ export default function UsuariosPage() {
                       </>
                     )}
                   </td>
-                </tr>
+                </motion.tr>
               ))}
             </tbody>
           </table>

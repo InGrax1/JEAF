@@ -1,6 +1,7 @@
 // Módulo de configuración de categorías (spec 3.3): CRUD con
 // activar/desactivar (soft delete) sin afectar el histórico.
 import { useEffect, useState, type FormEvent } from 'react';
+import { motion } from 'motion/react';
 import { api } from '../lib/api';
 import type { Categoria } from '../lib/types';
 import { Card, Modal, BadgeTipo, Cargando, MensajeError, inputCls, btnPrimario, btnSecundario } from '../components/ui';
@@ -97,8 +98,14 @@ export default function CategoriasPage() {
               </tr>
             </thead>
             <tbody>
-              {categorias.map((cat) => (
-                <tr key={cat.id} className={`border-b border-outline-variant last:border-0 hover:bg-surface-container-low ${!cat.activo ? 'text-on-surface-variant' : ''}`}>
+              {categorias.map((cat, i) => (
+                <motion.tr
+                  key={cat.id}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2, delay: Math.min(i, 12) * 0.025 }}
+                  className={`border-b border-outline-variant last:border-0 hover:bg-surface-container-low ${!cat.activo ? 'text-on-surface-variant' : ''}`}
+                >
                   <td className="px-4 py-2 font-medium">{cat.nombre}</td>
                   <td className="px-4 py-2"><BadgeTipo tipo={cat.tipo} /></td>
                   <td className="px-4 py-2">
@@ -119,7 +126,7 @@ export default function CategoriasPage() {
                       {cat.activo ? 'Desactivar' : 'Activar'}
                     </button>
                   </td>
-                </tr>
+                </motion.tr>
               ))}
             </tbody>
           </table>

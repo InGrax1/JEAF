@@ -23,13 +23,29 @@ import PantallaCarga from '../components/PantallaCarga';
 
 const COLORES = ['#006c49', '#0ea972', '#3fc38f', '#7ad9b3', '#c3ecd9', '#e0a030', '#ba1a1a', '#76777d'];
 
-function TarjetaCifra({ titulo, valor, tono }: { titulo: string; valor: number; tono?: 'verde' | 'rojo' }) {
+function TarjetaCifra({
+  titulo,
+  valor,
+  tono,
+  indice = 0,
+}: {
+  titulo: string;
+  valor: number;
+  tono?: 'verde' | 'rojo';
+  indice?: number;
+}) {
   const color = tono === 'verde' ? 'text-secondary' : tono === 'rojo' ? 'text-error' : 'text-primary';
   return (
-    <Card>
-      <p className="text-label-md uppercase text-on-surface-variant">{titulo}</p>
-      <p className={`mt-1 text-stats-lg ${color}`}>{formatoMoneda(valor)}</p>
-    </Card>
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, delay: indice * 0.06, ease: 'easeOut' }}
+    >
+      <Card>
+        <p className="text-label-md uppercase text-on-surface-variant">{titulo}</p>
+        <p className={`mt-1 text-stats-lg ${color}`}>{formatoMoneda(valor)}</p>
+      </Card>
+    </motion.div>
   );
 }
 
@@ -105,10 +121,11 @@ export default function DashboardPage() {
           <h2 className="text-headline-lg text-on-surface">Dashboard financiero</h2>
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <TarjetaCifra titulo="Flujo de caja (balance total)" valor={resumen.balanceTotal} />
-            <TarjetaCifra titulo="Ingresos del mes" valor={resumen.mesActual.ingresos} tono="verde" />
-            <TarjetaCifra titulo="Egresos del mes" valor={resumen.mesActual.egresos} tono="rojo" />
+            <TarjetaCifra indice={0} titulo="Flujo de caja (balance total)" valor={resumen.balanceTotal} />
+            <TarjetaCifra indice={1} titulo="Ingresos del mes" valor={resumen.mesActual.ingresos} tono="verde" />
+            <TarjetaCifra indice={2} titulo="Egresos del mes" valor={resumen.mesActual.egresos} tono="rojo" />
             <TarjetaCifra
+              indice={3}
               titulo="Resultado del año"
               valor={resumen.anioActual.ingresos - resumen.anioActual.egresos}
               tono={resumen.anioActual.ingresos - resumen.anioActual.egresos >= 0 ? 'verde' : 'rojo'}

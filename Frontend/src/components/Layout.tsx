@@ -4,6 +4,7 @@
 // deslizable con una barra superior y botón de menú.
 import { useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
+import { motion } from 'motion/react';
 import { useAuth } from '../context/AuthContext';
 import imagotipo from '../assets/imagotipo.png';
 
@@ -87,15 +88,29 @@ export default function Layout() {
               end={e.a === '/'}
               onClick={() => setMenuAbierto(false)}
               className={({ isActive }) =>
-                `flex items-center gap-3 rounded-lg px-3.5 py-2.5 text-sm transition-all duration-150 ${
+                `relative flex items-center gap-3 rounded-lg px-3.5 py-2.5 text-sm transition-colors duration-150 ${
                   isActive
-                    ? 'scale-[0.98] bg-secondary-container font-semibold text-on-secondary-container'
+                    ? 'font-semibold text-on-secondary-container'
                     : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
                 }`
               }
             >
-              <span className="material-symbols-outlined">{e.icono}</span>
-              {e.texto}
+              {({ isActive }) => (
+                <>
+                  {/* layoutId: el resaltado es un solo elemento que Motion
+                      desliza entre ítems al cambiar de ruta, en vez de que
+                      cada NavLink dibuje/borre su propio fondo. */}
+                  {isActive && (
+                    <motion.span
+                      layoutId="nav-activo"
+                      className="absolute inset-0 rounded-lg bg-secondary-container"
+                      transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                    />
+                  )}
+                  <span className="material-symbols-outlined relative z-10">{e.icono}</span>
+                  <span className="relative z-10">{e.texto}</span>
+                </>
+              )}
             </NavLink>
           ))}
         </nav>

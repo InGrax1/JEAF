@@ -2,6 +2,7 @@
 // filtros por fecha/categoría/tipo/estado, conciliación bancaria y cancelación
 // con motivo obligatorio (solo Tesorero; el Auditor es solo lectura).
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { motion } from 'motion/react';
 import { api } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import { formatoMoneda, formatoFecha, folioDe } from '../lib/format';
@@ -179,8 +180,14 @@ export default function TransaccionesPage() {
                   </td>
                 </tr>
               )}
-              {datos.items.map((tx) => (
-                <tr key={tx.id} className={`border-b border-outline-variant last:border-0 hover:bg-surface-container-low ${tx.estado === 'cancelada' ? 'bg-surface-container-low text-on-surface-variant' : ''}`}>
+              {datos.items.map((tx, i) => (
+                <motion.tr
+                  key={tx.id}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2, delay: Math.min(i, 12) * 0.025 }}
+                  className={`border-b border-outline-variant last:border-0 hover:bg-surface-container-low ${tx.estado === 'cancelada' ? 'bg-surface-container-low text-on-surface-variant' : ''}`}
+                >
                   <td className="whitespace-nowrap px-4 py-2">{formatoFecha(tx.fecha_transaccion)}</td>
                   <td className="px-4 py-2 font-mono text-xs">{folioDe(tx.id)}</td>
                   <td className="px-4 py-2"><BadgeTipo tipo={tx.tipo} /></td>
@@ -216,7 +223,7 @@ export default function TransaccionesPage() {
                       )}
                     </td>
                   )}
-                </tr>
+                </motion.tr>
               ))}
             </tbody>
           </table>
