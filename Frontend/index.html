@@ -8,6 +8,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>JEAF — Panel Administrativo</title>
 
+    <!-- Primer pintado ANTES de que cargue el CSS/JS: sin esto, el arranque de
+         la PWA en iOS muestra un destello negro (no hay imagen de arranque y el
+         fondo por defecto en standalone es negro). Debe coincidir con
+         --color-background de index.css. -->
+    <style>
+      html {
+        background-color: #f7f9fb;
+      }
+    </style>
+
     <!-- Favicon. ?v=2: los navegadores cachean el favicon de forma muy agresiva
          por origen (más que el resto de los assets); el query param fuerza a
          recargarlo cuando cambia el archivo (p. ej. al reemplazar la marca). -->

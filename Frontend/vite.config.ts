@@ -34,5 +34,17 @@ export default defineConfig({
   ],
   server: {
     port: 5173,
+    // Proxy de /api hacia el backend local. Así, al probar desde el celular
+    // con `npm run dev -- --host`, el navegador del teléfono solo habla con
+    // la IP de Vite (mismo origen) y es Vite quien reenvía a localhost:3000
+    // desde su propio proceso — sin esto, el teléfono interpretaría
+    // "localhost" como él mismo y jamás encontraría el backend. También evita
+    // tener que tocar CORS_ORIGINS en el backend para pruebas locales.
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+    },
   },
 });

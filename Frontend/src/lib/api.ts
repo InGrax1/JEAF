@@ -1,7 +1,12 @@
 // Cliente HTTP del panel: adjunta el JWT, renueva el access token con el
 // refresh token ante expiración (una sola vez por petición) y normaliza errores.
 
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api/v1';
+// Sin VITE_API_URL (desarrollo local), se usa una ruta relativa: el proxy de
+// Vite (vite.config.ts) reenvía /api al backend en localhost:3000. Esto
+// permite probar desde el celular con `npm run dev -- --host` sin que el
+// teléfono intente resolver "localhost" contra sí mismo. En producción,
+// VITE_API_URL apunta a la URL absoluta del backend (Render).
+const API_URL = import.meta.env.VITE_API_URL ?? '/api/v1';
 
 export class ApiError extends Error {
   code: string;

@@ -14,10 +14,12 @@ import {
   Pie,
   Cell,
 } from 'recharts';
+import { AnimatePresence, motion } from 'motion/react';
 import { api } from '../lib/api';
 import { formatoMoneda, formatoMes } from '../lib/format';
 import type { DashboardResumen } from '../lib/types';
-import { Card, Cargando, MensajeError } from '../components/ui';
+import { Card, MensajeError } from '../components/ui';
+import PantallaCarga from '../components/PantallaCarga';
 
 const COLORES = ['#006c49', '#0ea972', '#3fc38f', '#7ad9b3', '#c3ecd9', '#e0a030', '#ba1a1a', '#76777d'];
 
@@ -80,46 +82,60 @@ export default function DashboardPage() {
   }, []);
 
   if (error) return <MensajeError mensaje={error} />;
-  if (!resumen) return <Cargando texto="Cargando dashboard…" />;
 
-  const serie = resumen.serieMensual.map((m) => ({ ...m, mes: formatoMes(m.mes) }));
-  const ingresosCat = resumen.porCategoriaMes.filter((c) => c.tipo === 'ingreso');
-  const egresosCat = resumen.porCategoriaMes.filter((c) => c.tipo === 'egreso');
+  const serie = resumen?.serieMensual.map((m) => ({ ...m, mes: formatoMes(m.mes) })) ?? [];
+  const ingresosCat = resumen?.porCategoriaMes.filter((c) => c.tipo === 'ingreso') ?? [];
+  const egresosCat = resumen?.porCategoriaMes.filter((c) => c.tipo === 'egreso') ?? [];
 
+  // AnimatePresence debe seguir montado cuando la pantalla de carga se
+  // desmonta (al llegar los datos); si fuera un return temprano, el fade de
+  // salida nunca se reproduciría.
   return (
-    <div className="space-y-6">
-      <h2 className="text-headline-lg text-on-surface">Dashboard financiero</h2>
+    <>
+      <AnimatePresence>
+        {!resumen && <PantallaCarga texto="Cargando información financiera…" />}
+      </AnimatePresence>
+      {resumen && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: 'easeOut' }}
+          className="space-y-6"
+        >
+          <h2 className="text-headline-lg text-on-surface">Dashboard financiero</h2>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <TarjetaCifra titulo="Flujo de caja (balance total)" valor={resumen.balanceTotal} />
-        <TarjetaCifra titulo="Ingresos del mes" valor={resumen.mesActual.ingresos} tono="verde" />
-        <TarjetaCifra titulo="Egresos del mes" valor={resumen.mesActual.egresos} tono="rojo" />
-        <TarjetaCifra
-          titulo="Resultado del año"
-          valor={resumen.anioActual.ingresos - resumen.anioActual.egresos}
-          tono={resumen.anioActual.ingresos - resumen.anioActual.egresos >= 0 ? 'verde' : 'rojo'}
-        />
-      </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <TarjetaCifra titulo="Flujo de caja (balance total)" valor={resumen.balanceTotal} />
+            <TarjetaCifra titulo="Ingresos del mes" valor={resumen.mesActual.ingresos} tono="verde" />
+            <TarjetaCifra titulo="Egresos del mes" valor={resumen.mesActual.egresos} tono="rojo" />
+            <TarjetaCifra
+              titulo="Resultado del año"
+              valor={resumen.anioActual.ingresos - resumen.anioActual.egresos}
+              tono={resumen.anioActual.ingresos - resumen.anioActual.egresos >= 0 ? 'verde' : 'rojo'}
+            />
+          </div>
 
-      <Card>
-        <h3 className="mb-2 text-headline-md text-primary">Ingresos vs egresos — últimos 12 meses</h3>
-        <ResponsiveContainer width="100%" height={280}>
-          <BarChart data={serie}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#c6c6cd" />
-            <XAxis dataKey="mes" fontSize={12} stroke="#45464d" />
-            <YAxis fontSize={12} stroke="#45464d" tickFormatter={(v) => `$${Number(v).toLocaleString()}`} />
-            <Tooltip formatter={(v) => formatoMoneda(Number(v))} />
-            <Legend />
-            <Bar dataKey="ingresos" name="Ingresos" fill="#006c49" radius={[3, 3, 0, 0]} />
-            <Bar dataKey="egresos" name="Egresos" fill="#ba1a1a" radius={[3, 3, 0, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
-      </Card>
+          <Card>
+            <h3 className="mb-2 text-headline-md text-primary">Ingresos vs egresos — últimos 12 meses</h3>
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart data={serie}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#c6c6cd" />
+                <XAxis dataKey="mes" fontSize={12} stroke="#45464d" />
+                <YAxis fontSize={12} stroke="#45464d" tickFormatter={(v) => `$${Number(v).toLocaleString()}`} />
+                <Tooltip formatter={(v) => formatoMoneda(Number(v))} />
+                <Legend />
+                <Bar dataKey="ingresos" name="Ingresos" fill="#006c49" radius={[3, 3, 0, 0]} />
+                <Bar dataKey="egresos" name="Egresos" fill="#ba1a1a" radius={[3, 3, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </Card>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <PieCategorias datos={ingresosCat} titulo="Ingresos del mes por categoría" />
-        <PieCategorias datos={egresosCat} titulo="Egresos del mes por categoría" />
-      </div>
-    </div>
+          <div className="grid gap-4 lg:grid-cols-2">
+            <PieCategorias datos={ingresosCat} titulo="Ingresos del mes por categoría" />
+            <PieCategorias datos={egresosCat} titulo="Egresos del mes por categoría" />
+          </div>
+        </motion.div>
+      )}
+    </>
   );
 }
