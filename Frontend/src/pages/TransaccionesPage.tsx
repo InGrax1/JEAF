@@ -54,6 +54,12 @@ export default function TransaccionesPage() {
   }, [cargar]);
 
   useEffect(() => {
+    // Refresco al registrar un ingreso/gasto desde los botones flotantes (Layout.tsx)
+    window.addEventListener('jeaf:transaccion-creada', cargar);
+    return () => window.removeEventListener('jeaf:transaccion-creada', cargar);
+  }, [cargar]);
+
+  useEffect(() => {
     api<Categoria[]>('/categorias').then(setCategorias).catch(() => {});
   }, []);
 

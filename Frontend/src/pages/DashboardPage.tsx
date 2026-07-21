@@ -92,9 +92,17 @@ export default function DashboardPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    api<DashboardResumen>('/dashboard/resumen')
-      .then(setResumen)
-      .catch((e) => setError(e.message));
+    function cargar() {
+      api<DashboardResumen>('/dashboard/resumen')
+        .then(setResumen)
+        .catch((e) => setError(e.message));
+    }
+    cargar();
+    // Refresco silencioso al registrar un ingreso/gasto desde los botones
+    // flotantes (Layout.tsx) — no se resetea `resumen` a null, así que no
+    // vuelve a mostrarse la pantalla de carga completa, solo se actualizan los datos.
+    window.addEventListener('jeaf:transaccion-creada', cargar);
+    return () => window.removeEventListener('jeaf:transaccion-creada', cargar);
   }, []);
 
   if (error) return <MensajeError mensaje={error} />;

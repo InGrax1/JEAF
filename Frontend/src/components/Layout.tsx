@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { useAuth } from '../context/AuthContext';
+import AccionesRapidasTransaccion from './AccionesRapidasTransaccion';
 import imagotipo from '../assets/imagotipo.png';
 
 const ETIQUETA_ROL: Record<string, string> = {
@@ -134,6 +135,10 @@ export default function Layout() {
       <main className="flex-1 overflow-x-auto p-4 pb-[calc(1rem_+_env(safe-area-inset-bottom))] lg:p-8">
         <Outlet />
       </main>
+
+      {/* Registro rápido de ingresos/gastos desde la web (antes solo vía Atajo
+          de iOS). Fuera del <Outlet />: queda accesible en cualquier página. */}
+      {esAdmin && <AccionesRapidasTransaccion />}
     </div>
   );
 }
