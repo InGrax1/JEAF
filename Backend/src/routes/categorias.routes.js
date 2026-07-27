@@ -28,4 +28,14 @@ router.put(
   categoriasController.actualizar
 );
 
+// Baja definitiva: solo para categorías que nunca se usaron (el service lo
+// verifica). Las que tienen histórico se desactivan con PUT { activo: false }.
+router.delete(
+  '/:id',
+  authJwt,
+  permitir('super_admin'),
+  validate(idParamSchema, 'params'),
+  categoriasController.eliminar
+);
+
 module.exports = router;

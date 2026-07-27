@@ -248,6 +248,14 @@
         "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
         "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "properties": { "nombre": { "type": "string" }, "tipo": { "type": "string", "enum": ["ingreso", "egreso"] }, "activo": { "type": "boolean" } } } } } },
         "responses": { "200": { "description": "Actualizada" }, "409": { "description": "Nombre duplicado o categoría en uso" } }
+      },
+      "delete": {
+        "tags": ["Categorías"],
+        "summary": "Eliminar definitivamente una categoría sin uso (solo Tesorero)",
+        "description": "Borrado permanente, pensado para corregir un alta equivocada. Solo se permite si la categoría no tiene ninguna transacción asociada; con histórico responde 409 y debe desactivarse con PUT { activo: false } para conservar el historial y los reportes.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+        "responses": { "200": { "description": "Eliminada" }, "404": { "description": "No encontrada" }, "409": { "description": "Tiene transacciones en el histórico (CATEGORY_IN_USE)" } }
       }
     },
     "/usuarios": {

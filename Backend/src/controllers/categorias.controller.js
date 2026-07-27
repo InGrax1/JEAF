@@ -32,4 +32,13 @@ async function actualizar(req, res, next) {
   }
 }
 
-module.exports = { listar, crear, actualizar };
+async function eliminar(req, res, next) {
+  try {
+    await categoriasService.eliminar(req.params.id, contextoDe(req));
+    res.json({ ok: true, data: { eliminada: true } });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { listar, crear, actualizar, eliminar };

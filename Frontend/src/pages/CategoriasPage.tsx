@@ -4,7 +4,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { motion } from 'motion/react';
 import { api } from '../lib/api';
 import type { Categoria } from '../lib/types';
-import { Card, Modal, BadgeTipo, Cargando, MensajeError, inputCls, btnPrimario, btnSecundario } from '../components/ui';
+import { Card, Modal, BadgeTipo, Cargando, MensajeError, inputCls, btnPrimario, btnSecundario, btnPeligro } from '../components/ui';
 
 export default function CategoriasPage() {
   const [categorias, setCategorias] = useState<Categoria[] | null>(null);
@@ -14,6 +14,8 @@ export default function CategoriasPage() {
   const [nombre, setNombre] = useState('');
   const [tipo, setTipo] = useState<'ingreso' | 'egreso'>('ingreso');
   const [procesando, setProcesando] = useState(false);
+  const [aEliminar, setAEliminar] = useState<Categoria | null>(null);
+  const [errorEliminar, setErrorEliminar] = useState('');
 
   async function cargar() {
     try {
@@ -75,6 +77,29 @@ export default function CategoriasPage() {
     }
   }
 
+  function abrirEliminar(cat: Categoria) {
+    setAEliminar(cat);
+    setErrorEliminar('');
+  }
+
+  // El backend rechaza el borrado si la categoría tiene movimientos; ese
+  // mensaje se muestra dentro del modal para que el aviso quede junto a la
+  // acción y se pueda desactivar en su lugar.
+  async function confirmarEliminar() {
+    if (!aEliminar) return;
+    setProcesando(true);
+    setErrorEliminar('');
+    try {
+      await api(`/categorias/${aEliminar.id}`, { method: 'DELETE' });
+      setAEliminar(null);
+      cargar();
+    } catch (e) {
+      setErrorEliminar(e instanceof Error ? e.message : 'Error');
+    } finally {
+      setProcesando(false);
+    }
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -120,10 +145,13 @@ export default function CategoriasPage() {
                       Editar
                     </button>
                     <button
-                      className={`font-semibold hover:underline ${cat.activo ? 'text-error' : 'text-secondary'}`}
+                      className={`mr-3 font-semibold hover:underline ${cat.activo ? 'text-amber-600' : 'text-secondary'}`}
                       onClick={() => alternarActivo(cat)}
                     >
                       {cat.activo ? 'Desactivar' : 'Activar'}
+                    </button>
+                    <button className="font-semibold text-error hover:underline" onClick={() => abrirEliminar(cat)}>
+                      Eliminar
                     </button>
                   </td>
                 </motion.tr>
@@ -162,6 +190,28 @@ export default function CategoriasPage() {
             </button>
           </div>
         </form>
+      </Modal>
+
+      <Modal titulo="Eliminar categoría" abierto={aEliminar !== null} onCerrar={() => setAEliminar(null)}>
+        {aEliminar && (
+          <div className="space-y-4">
+            <p className="text-sm text-on-surface-variant">
+              Se eliminará <strong className="text-on-surface">{aEliminar.nombre}</strong> de forma permanente.
+            </p>
+            <p className="rounded-lg border border-outline-variant bg-surface-container-low px-4 py-2.5 text-sm text-on-surface-variant">
+              Solo se pueden eliminar categorías que <strong>nunca se hayan usado</strong>. Si ya tiene movimientos
+              registrados, usa <strong>Desactivar</strong>: deja de aparecer al capturar, pero el historial y los
+              reportes conservan su nombre.
+            </p>
+            {errorEliminar && <MensajeError mensaje={errorEliminar} />}
+            <div className="flex justify-end gap-2">
+              <button className={btnSecundario} onClick={() => setAEliminar(null)}>Volver</button>
+              <button className={btnPeligro} disabled={procesando} onClick={confirmarEliminar}>
+                {procesando ? 'Eliminando…' : 'Eliminar'}
+              </button>
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   );

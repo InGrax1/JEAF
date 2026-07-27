@@ -32,4 +32,19 @@ async function totalesPorCategoria(desde, hasta, conn = pool) {
   return rows;
 }
 
-module.exports = { transaccionesDelPeriodo, totalesPorCategoria };
+// Acumulado histórico anterior a una fecha (solo activas). Alimenta el
+// "SALDO DEL MES" del formato oficial, que arrastra lo que quedó en caja
+// al cierre del mes previo.
+async function acumuladoAntesDe(fecha, conn = pool) {
+  const [rows] = await conn.query(
+    `SELECT
+       COALESCE(SUM(CASE WHEN tipo = 'ingreso' THEN monto ELSE 0 END), 0) AS ingresos,
+       COALESCE(SUM(CASE WHEN tipo = 'egreso'  THEN monto ELSE 0 END), 0) AS egresos
+     FROM transacciones
+     WHERE estado = 'activa' AND fecha_transaccion < ?`,
+    [fecha]
+  );
+  return rows[0];
+}
+
+module.exports = { transaccionesDelPeriodo, totalesPorCategoria, acumuladoAntesDe };

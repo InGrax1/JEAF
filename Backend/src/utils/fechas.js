@@ -39,4 +39,35 @@ function nombreMes(mes) {
   return new Date(2000, mes - 1, 1).toLocaleDateString('es-MX', { month: 'long' });
 }
 
-module.exports = { rangoMesLocal, formatoLocal, nombreMes, offsetMs };
+/**
+ * Descompone una fecha UTC en año/mes/día tal como se ven en la zona local de
+ * la iglesia. Necesario para asentar cada movimiento en su día correcto del
+ * formato oficial: una ofrenda de las 23:00 hora local cae al día siguiente en
+ * UTC, y en el reporte debe aparecer en el día en que realmente se recibió.
+ */
+function partesLocales(fechaUtc, tz = env.localTimezone) {
+  const partes = new Intl.DateTimeFormat('en-CA', {
+    timeZone: tz,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  })
+    .formatToParts(new Date(fechaUtc))
+    .reduce((acc, p) => ({ ...acc, [p.type]: p.value }), {});
+  return { anio: Number(partes.year), mes: Number(partes.month), dia: Number(partes.day) };
+}
+
+/** Fecha corta dd/mm/aaaa en hora local (formato de la columna FECHA del reporte) */
+function formatoFechaCorta(fechaUtc, tz = env.localTimezone) {
+  const { anio, mes, dia } = partesLocales(fechaUtc, tz);
+  return `${String(dia).padStart(2, '0')}/${String(mes).padStart(2, '0')}/${anio}`;
+}
+
+module.exports = {
+  rangoMesLocal,
+  formatoLocal,
+  nombreMes,
+  offsetMs,
+  partesLocales,
+  formatoFechaCorta,
+};

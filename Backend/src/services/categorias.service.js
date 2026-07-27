@@ -75,4 +75,43 @@ async function actualizar(id, cambios, contexto) {
   return categoriasRepository.findById(id);
 }
 
-module.exports = { listar, crear, actualizar };
+/**
+ * Elimina una categoría de forma definitiva. Solo se permite si NUNCA se usó:
+ * es para corregir un alta equivocada, no para depurar el catálogo. Una
+ * categoría con movimientos se desactiva (`activo = 0`), nunca se borra —
+ * borrarla dejaría sin nombre a las transacciones históricas y a los reportes,
+ * que lo resuelven con un JOIN contra esta tabla.
+ */
+async function eliminar(id, contexto) {
+  const anterior = await categoriasRepository.findById(id);
+  if (!anterior) throw new AppError('Categoría no encontrada', 404, 'CATEGORY_NOT_FOUND');
+
+  const usos = await transaccionesRepository.countByCategoria(id);
+  if (usos > 0) {
+    throw new AppError(
+      `No se puede eliminar: la categoría tiene ${usos} transacción(es) en el histórico. Desactívala para dejar de usarla sin borrar el historial.`,
+      409,
+      'CATEGORY_IN_USE'
+    );
+  }
+
+  await db.withTransaction(async (conn) => {
+    await categoriasRepository.eliminar(id, conn);
+    await auditService.registrar(
+      {
+        tabla: 'categorias',
+        registroId: id,
+        // El enum de logs_auditoria no tiene DELETE; CANCEL es la acción que
+        // ya usa el sistema para las bajas (ver usuarios.service.js).
+        accion: 'CANCEL',
+        estadoAnterior: anterior,
+        estadoNuevo: { eliminada: true, permanente: true },
+        usuarioId: contexto.usuarioId,
+        ipAddress: contexto.ip,
+      },
+      conn
+    );
+  });
+}
+
+module.exports = { listar, crear, actualizar, eliminar };

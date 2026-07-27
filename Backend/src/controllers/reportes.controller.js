@@ -6,10 +6,12 @@ const { generarExcelMensual } = require('../utils/reporteExcel');
 async function mensual(req, res, next) {
   try {
     const { anio, mes, formato } = req.query;
-    const datos = await reportesService.datosMensual(anio, mes);
     const nombreBase = `JEAF_Reporte_${anio}-${String(mes).padStart(2, '0')}`;
 
     if (formato === 'xlsx') {
+      // El Excel sigue siendo el desglose contable interno; el PDF es el
+      // formato oficial de la organización (ver utils/reportePdf.js).
+      const datos = await reportesService.datosMensual(anio, mes);
       const buffer = await generarExcelMensual(datos);
       res
         .set({
@@ -19,6 +21,7 @@ async function mensual(req, res, next) {
         })
         .send(buffer);
     } else {
+      const datos = await reportesService.datosPlantilla(anio, mes);
       const buffer = await generarPdfMensual(datos);
       res
         .set({

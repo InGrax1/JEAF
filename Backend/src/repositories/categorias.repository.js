@@ -43,4 +43,11 @@ async function update(id, campos, conn = pool) {
   await conn.query(`UPDATE categorias SET ${sets.join(', ')} WHERE id = ? AND deleted_at IS NULL`, valores);
 }
 
-module.exports = { findAll, findById, findByNombre, insert, update };
+// Borrado real. Solo se invoca desde el service tras comprobar que la
+// categoría no tiene transacciones: con histórico, la FK de transacciones lo
+// impediría y además rompería los reportes (que resuelven el nombre por JOIN).
+async function eliminar(id, conn = pool) {
+  await conn.query('DELETE FROM categorias WHERE id = ?', [id]);
+}
+
+module.exports = { findAll, findById, findByNombre, insert, update, eliminar };

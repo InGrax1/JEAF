@@ -27,6 +27,10 @@ module.exports = {
   bcryptSaltRounds: parseInt(process.env.BCRYPT_SALT_ROUNDS, 10) || 12,
   localTimezone: process.env.LOCAL_TIMEZONE || 'America/Mexico_City',
   iglesiaNombre: process.env.IGLESIA_NOMBRE || 'JEAF — Gestión Financiera',
+  // Dinero que ya había en caja antes de que existiera JEAF. El reporte
+  // mensual lo suma al histórico del sistema para calcular el "SALDO DEL MES"
+  // (saldo que arrastra del mes anterior) del formato oficial.
+  saldoInicialCaja: Number(process.env.SALDO_INICIAL_CAJA || 0),
   // SMTP es opcional a nivel de arranque (no rompe el servidor si falta):
   // se valida hasta el momento de enviar un correo real (ver utils/email.js).
   smtp: {
