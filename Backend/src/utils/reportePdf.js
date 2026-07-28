@@ -5,9 +5,16 @@
 // Tesorera. El formato no debe modificarse: cualquier ajuste de textos o de
 // orden de conceptos va en la configuración, no aquí.
 const PDFDocument = require('pdfkit');
+const fs = require('fs');
+const path = require('path');
 
 const NEGRO = '#000000';
 const GRIS_CAB = '#D9D9D9';
+
+// Sello de la organización, a la izquierda del encabezado. Va en PNG porque
+// pdfkit no rasteriza SVG; el original vectorial está en docs/logo/.
+const RUTA_LOGO = path.join(__dirname, '..', '..', 'assets', 'logo-miep.png');
+const LADO_LOGO = 44;
 
 // Geometría: carta vertical con los márgenes del formato original
 // (0.7" laterales, 0.75" superior/inferior).
@@ -111,6 +118,21 @@ function generarPdfMensual(datos) {
     // +40 y mide ~10), más un respiro para que no toque el borde del recuadro.
     const altoEnc = 52;
     doc.lineWidth(0.5).rect(MARGEN_X, y, ANCHO, altoEnc).strokeColor(NEGRO).stroke();
+
+    // Sello a la izquierda, centrado en el alto del recuadro. El texto va
+    // centrado sobre el ancho completo y su línea más larga arranca ~70pt
+    // después del logo, así que no se encima. Si el archivo faltara, el
+    // reporte se genera igual: es un cierre contable, no puede depender de él.
+    if (fs.existsSync(RUTA_LOGO)) {
+      try {
+        doc.image(RUTA_LOGO, MARGEN_X + 5, y + (altoEnc - LADO_LOGO) / 2, {
+          fit: [LADO_LOGO, LADO_LOGO],
+        });
+      } catch {
+        /* logo ilegible: continuar sin él */
+      }
+    }
+
     let yTexto = y + 4;
     doc.font('Helvetica-Bold').fontSize(7.5).fillColor(NEGRO)
       .text(datos.institucion.linea1, MARGEN_X + 4, yTexto, { width: ANCHO - 8, align: 'center', lineBreak: false });

@@ -31,6 +31,7 @@ Estrategia de la especificación (10.6): **dev (local) → staging (Render) → 
    - Credenciales de Aiven (`DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`)
    - Secretos JWT largos y aleatorios, **distintos** de los de staging
    - `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` — **obligatorias en producción** para la recuperación de contraseña (spec: código por correo). Sin ellas, `POST /auth/olvide-password` responde `500`. Con Gmail: host `smtp.gmail.com`, puerto `587`, y una [contraseña de aplicación](https://myaccount.google.com/apppasswords) (no la contraseña normal de la cuenta)
+   - `SALDO_INICIAL_CAJA` — **dinero que ya había en caja el día que arrancó JEAF**. Es el "SALDO DEL MES" con el que abre el primer reporte mensual en PDF; si se deja en `0`, ese renglón sale en cero y el saldo en caja queda mal desde el primer cierre. El valor es el **saldo final del último mes que se llevó fuera del sistema** (en la contabilidad previa en Excel, la casilla "SALDO EN CAJA AL FINAL DEL MES"). Si algún día se importa ese histórico como transacciones, hay que bajar esta variable al saldo anterior a la importación para no contar el mismo dinero dos veces
 4. Crear **dos servicios** (staging apuntando a `develop`, producción a `main`) y copiar el **Deploy Hook** de cada uno (Settings → Deploy Hook) a los secretos de GitHub:
    - `RENDER_STAGING_DEPLOY_HOOK`
    - `RENDER_PROD_DEPLOY_HOOK`
