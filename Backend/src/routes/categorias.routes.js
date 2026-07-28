@@ -19,6 +19,13 @@ router.get('/', authDual, validate(listarCategoriasQuerySchema, 'query'), catego
 
 // Administración: exclusiva del Tesorero
 router.post('/', authJwt, permitir('super_admin'), validate(crearCategoriaSchema), categoriasController.crear);
+router.get(
+  '/:id/uso',
+  authJwt,
+  permitir('super_admin'),
+  validate(idParamSchema, 'params'),
+  categoriasController.consultarUso
+);
 router.put(
   '/:id',
   authJwt,
@@ -28,8 +35,7 @@ router.put(
   categoriasController.actualizar
 );
 
-// Baja definitiva: solo para categorías que nunca se usaron (el service lo
-// verifica). Las que tienen histórico se desactivan con PUT { activo: false }.
+// La UI consulta primero /:id/uso; el service verifica de nuevo al confirmar.
 router.delete(
   '/:id',
   authJwt,

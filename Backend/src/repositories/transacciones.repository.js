@@ -85,12 +85,19 @@ async function setConciliada(id, conciliada, conn = pool) {
   );
 }
 
-async function countByCategoria(categoriaId, conn = pool) {
-  const [[{ total }]] = await conn.query(
-    'SELECT COUNT(*) AS total FROM transacciones WHERE categoria_id = ?',
+
+// Verificación ligera para reglas que solo necesitan saber si existe algún uso.
+// LIMIT 1 evita contar o recorrer todo el histórico y aprovecha
+// idx_transacciones_categoria.
+async function existePorCategoria(categoriaId, conn = pool) {
+  const [rows] = await conn.query(
+    'SELECT 1 FROM transacciones WHERE categoria_id = ? LIMIT 1',
     [categoriaId]
   );
-  return total;
+  return rows.length > 0;
 }
 
-module.exports = { insert, findById, findByIdempotencyKey, list, cancelar, setConciliada, countByCategoria };
+module.exports = {
+  insert, findById, findByIdempotencyKey, list, cancelar, setConciliada,
+  existePorCategoria,
+};

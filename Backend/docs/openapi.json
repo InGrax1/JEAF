@@ -239,6 +239,16 @@
         "responses": { "201": { "description": "Creada" }, "409": { "description": "Nombre duplicado" } }
       }
     },
+    "/categorias/{id}/uso": {
+      "get": {
+        "tags": ["Categorías"],
+        "summary": "Verificar si una categoría fue utilizada (solo Tesorero)",
+        "description": "Consulta ligera indexada con LIMIT 1; no cuenta ni recorre todo el histórico.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+        "responses": { "200": { "description": "Devuelve data.enUso como booleano" }, "404": { "description": "No encontrada" } }
+      }
+    },
     "/categorias/{id}": {
       "put": {
         "tags": ["Categorías"],

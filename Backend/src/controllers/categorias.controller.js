@@ -32,6 +32,14 @@ async function actualizar(req, res, next) {
   }
 }
 
+async function consultarUso(req, res, next) {
+  try {
+    res.json({ ok: true, data: await categoriasService.consultarUso(req.params.id) });
+  } catch (err) {
+    next(err);
+  }
+}
+
 async function eliminar(req, res, next) {
   try {
     await categoriasService.eliminar(req.params.id, contextoDe(req));
@@ -41,4 +49,4 @@ async function eliminar(req, res, next) {
   }
 }
 
-module.exports = { listar, crear, actualizar, eliminar };
+module.exports = { listar, crear, actualizar, consultarUso, eliminar };

@@ -15,6 +15,7 @@ export default function CategoriasPage() {
   const [tipo, setTipo] = useState<'ingreso' | 'egreso'>('ingreso');
   const [procesando, setProcesando] = useState(false);
   const [aEliminar, setAEliminar] = useState<Categoria | null>(null);
+  const [estadoUso, setEstadoUso] = useState<'consultando' | 'usada' | 'libre' | null>(null);
   const [errorEliminar, setErrorEliminar] = useState('');
 
   async function cargar() {
@@ -77,21 +78,27 @@ export default function CategoriasPage() {
     }
   }
 
-  function abrirEliminar(cat: Categoria) {
+  async function abrirEliminar(cat: Categoria) {
     setAEliminar(cat);
+    setEstadoUso('consultando');
     setErrorEliminar('');
+    try {
+      const resultado = await api<{ enUso: boolean }>(`/categorias/${cat.id}/uso`);
+      setEstadoUso(resultado.enUso ? 'usada' : 'libre');
+    } catch (e) {
+      setEstadoUso(null);
+      setErrorEliminar(e instanceof Error ? e.message : 'No se pudo verificar la categoría');
+    }
   }
 
-  // El backend rechaza el borrado si la categoría tiene movimientos; ese
-  // mensaje se muestra dentro del modal para que el aviso quede junto a la
-  // acción y se pueda desactivar en su lugar.
   async function confirmarEliminar() {
-    if (!aEliminar) return;
+    if (!aEliminar || estadoUso !== 'libre') return;
     setProcesando(true);
     setErrorEliminar('');
     try {
       await api(`/categorias/${aEliminar.id}`, { method: 'DELETE' });
       setAEliminar(null);
+      setEstadoUso(null);
       cargar();
     } catch (e) {
       setErrorEliminar(e instanceof Error ? e.message : 'Error');
@@ -192,23 +199,47 @@ export default function CategoriasPage() {
         </form>
       </Modal>
 
-      <Modal titulo="Eliminar categoría" abierto={aEliminar !== null} onCerrar={() => setAEliminar(null)}>
+      <Modal
+        titulo="Eliminar categoría"
+        abierto={aEliminar !== null}
+        onCerrar={() => { setAEliminar(null); setEstadoUso(null); }}
+      >
         {aEliminar && (
           <div className="space-y-4">
-            <p className="text-sm text-on-surface-variant">
-              Se eliminará <strong className="text-on-surface">{aEliminar.nombre}</strong> de forma permanente.
-            </p>
-            <p className="rounded-lg border border-outline-variant bg-surface-container-low px-4 py-2.5 text-sm text-on-surface-variant">
-              Solo se pueden eliminar categorías que <strong>nunca se hayan usado</strong>. Si ya tiene movimientos
-              registrados, usa <strong>Desactivar</strong>: deja de aparecer al capturar, pero el historial y los
-              reportes conservan su nombre.
-            </p>
+            {estadoUso === 'consultando' && (
+              <div className="flex items-center gap-3 rounded-lg border border-outline-variant bg-surface-container-low px-4 py-3 text-sm text-on-surface-variant">
+                <span className="material-symbols-outlined animate-spin" aria-hidden="true">progress_activity</span>
+                Verificando si la categoría fue utilizada…
+              </div>
+            )}
+            {estadoUso === 'usada' && (
+              <div className="rounded-lg border border-error/30 bg-error-container px-4 py-3">
+                <p className="font-semibold text-on-error-container">Esta categoría ya fue utilizada</p>
+                <p className="mt-1 text-sm text-on-error-container">
+                  <strong>{aEliminar.nombre}</strong> no se puede borrar porque forma parte del historial.
+                  Puedes desactivarla para que deje de aparecer al registrar movimientos.
+                </p>
+              </div>
+            )}
+            {estadoUso === 'libre' && (
+              <div className="rounded-lg border border-error/30 bg-error-container px-4 py-3">
+                <p className="font-semibold text-on-error-container">Borrado permanente</p>
+                <p className="mt-1 text-sm text-on-error-container">
+                  <strong>{aEliminar.nombre}</strong> nunca ha sido utilizada y se eliminará de forma definitiva.
+                  Esta acción no se puede deshacer.
+                </p>
+              </div>
+            )}
             {errorEliminar && <MensajeError mensaje={errorEliminar} />}
             <div className="flex justify-end gap-2">
-              <button className={btnSecundario} onClick={() => setAEliminar(null)}>Volver</button>
-              <button className={btnPeligro} disabled={procesando} onClick={confirmarEliminar}>
-                {procesando ? 'Eliminando…' : 'Eliminar'}
+              <button className={btnSecundario} onClick={() => { setAEliminar(null); setEstadoUso(null); }}>
+                {estadoUso === 'usada' ? 'Entendido' : 'Volver'}
               </button>
+              {estadoUso === 'libre' && (
+                <button className={btnPeligro} disabled={procesando} onClick={confirmarEliminar}>
+                  {procesando ? 'Eliminando…' : 'Eliminar permanentemente'}
+                </button>
+              )}
             </div>
           </div>
         )}

@@ -41,8 +41,8 @@ async function actualizar(id, cambios, contexto) {
   // Cambiar el tipo reclasificaría el histórico del libro mayor: solo se
   // permite si la categoría aún no tiene transacciones asociadas.
   if (cambios.tipo !== undefined && cambios.tipo !== anterior.tipo) {
-    const usos = await transaccionesRepository.countByCategoria(id);
-    if (usos > 0) {
+    const enUso = await transaccionesRepository.existePorCategoria(id);
+    if (enUso) {
       throw new AppError(
         'No se puede cambiar el tipo: la categoría tiene transacciones históricas. Desactívala y crea una nueva.',
         409,
@@ -76,6 +76,16 @@ async function actualizar(id, cambios, contexto) {
 }
 
 /**
+ * Consulta previa para que el Tesorero conozca el efecto antes de confirmar.
+ * No cuenta movimientos: basta encontrar uno mediante el índice de categoría.
+ */
+async function consultarUso(id) {
+  const categoria = await categoriasRepository.findById(id);
+  if (!categoria) throw new AppError('Categoría no encontrada', 404, 'CATEGORY_NOT_FOUND');
+  return { enUso: await transaccionesRepository.existePorCategoria(id) };
+}
+
+/**
  * Elimina una categoría de forma definitiva. Solo se permite si NUNCA se usó:
  * es para corregir un alta equivocada, no para depurar el catálogo. Una
  * categoría con movimientos se desactiva (`activo = 0`), nunca se borra —
@@ -86,10 +96,11 @@ async function eliminar(id, contexto) {
   const anterior = await categoriasRepository.findById(id);
   if (!anterior) throw new AppError('Categoría no encontrada', 404, 'CATEGORY_NOT_FOUND');
 
-  const usos = await transaccionesRepository.countByCategoria(id);
-  if (usos > 0) {
+  // Se repite al confirmar para cubrir movimientos creados después del aviso.
+  const enUso = await transaccionesRepository.existePorCategoria(id);
+  if (enUso) {
     throw new AppError(
-      `No se puede eliminar: la categoría tiene ${usos} transacción(es) en el histórico. Desactívala para dejar de usarla sin borrar el historial.`,
+      'No se puede eliminar: la categoría ya fue usada en el histórico. Desactívala para dejar de usarla sin borrar los movimientos anteriores.',
       409,
       'CATEGORY_IN_USE'
     );
@@ -114,4 +125,4 @@ async function eliminar(id, contexto) {
   });
 }
 
-module.exports = { listar, crear, actualizar, eliminar };
+module.exports = { listar, crear, actualizar, consultarUso, eliminar };
