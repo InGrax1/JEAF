@@ -271,14 +271,14 @@ function generarPdfMensual(datos) {
       });
     }
 
-    // OTROS: lo que no coincide con el catálogo conserva aquí su categoría
+    // Fuera del catálogo, el concepto es la nota o la categoría como respaldo.
     const otros = datos.egresos.otros.length > 0 ? datos.egresos.otros : [null];
     otros.forEach((p) => {
       asegurarEspacio(ALTO_FILA, cabeceraEgresos);
       filaTabla(
         doc,
         COLS_EGR,
-        ['', p ? `OTROS: ${p.detalle}` : 'OTROS:', p ? p.folio : '', p ? p.fecha : '', p ? money(p.importe) : ''],
+        ['', p ? p.detalle : 'OTROS:', p ? p.folio : '', p ? p.fecha : '', p ? money(p.importe) : ''],
         y
       );
       y += ALTO_FILA;

@@ -122,8 +122,11 @@ async function datosPlantilla(anio, mes) {
       detalle: m.categoria,
     };
     const concepto = plantilla.conceptoEgreso(m.categoria);
-    if (concepto === plantilla.CONCEPTO_EGRESO_RESTO) otros.push(partida);
-    else partidasPorConcepto.get(concepto).push(partida);
+    if (concepto === plantilla.CONCEPTO_EGRESO_RESTO) {
+      // En OTROS, las notas describen el gasto; sin notas se conserva la categoría.
+      partida.detalle = m.notas?.trim() || m.categoria;
+      otros.push(partida);
+    } else partidasPorConcepto.get(concepto).push(partida);
   }
 
   const conceptos = plantilla.CONCEPTOS_EGRESO.map((concepto, i) => ({

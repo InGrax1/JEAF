@@ -53,8 +53,8 @@ const CONCEPTOS_EGRESO = [
 ];
 
 // Casilla a la que va a parar lo que no coincide con ninguna equivalencia.
-// El formato la imprime como "OTROS: <detalle>", así que ahí se conserva el
-// nombre de la categoría y no se pierde información.
+// En egresos, el concepto de cada movimiento en esa casilla usa sus notas
+// o, si están vacías, el nombre de la categoría.
 const COLUMNA_INGRESO_RESTO = 'APORTACIONES';
 const CONCEPTO_EGRESO_RESTO = 'OTROS';
 

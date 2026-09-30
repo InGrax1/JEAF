@@ -6,6 +6,11 @@ Versionado alineado a las fases de desarrollo de la especificación JEAF v1.2.
 
 ---
 
+## [No publicado]
+
+### Corregido
+- **PDF mensual descargado desde Reportes**: los egresos agrupados en OTROS muestran sus notas como concepto, con la categoría como respaldo cuando no hay notas. Ajuste realizado en el generador del backend.
+
 ### Corregido
 - **"Error inesperado" al registrar ingresos/gastos desde el celular en pruebas locales**: `crypto.randomUUID()` exige un contexto seguro (HTTPS o `localhost`); al probar con `npm run dev -- --host` y entrar desde el teléfono por la IP de red (`http://192.168.x.x:5173`, sin HTTPS), no existe y tronaba antes de llegar al backend, cayendo en el mensaje genérico. El backend solo exige que `idempotencyKey` sea un string de 8-191 caracteres (no un UUID con formato específico), así que `AccionesRapidasTransaccion.tsx` ahora degrada a `crypto.getRandomValues()` (disponible en cualquier contexto) y, como último recurso, a `Date.now()` + `Math.random()`. Verificado deshabilitando `crypto.randomUUID` en el navegador para simular el mismo escenario.
 

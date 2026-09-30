@@ -8,6 +8,9 @@ Versionado alineado a las fases de desarrollo de la especificación JEAF v1.2.
 
 ## [No publicado]
 
+### Corregido
+- **Concepto de egresos en OTROS del PDF mensual**: cada movimiento muestra directamente sus notas (por ejemplo, "licuadora"), sin el prefijo "OTROS:". Si las notas faltan, están vacías o solo contienen espacios, muestra la categoría de egreso. Los conceptos del catálogo oficial conservan su nombre.
+
 ### Agregado
 - **Sello de la organización en el reporte mensual en PDF** (`assets/logo-miep.png`), a la izquierda del encabezado institucional. El original vectorial queda en `docs/logo/logo-miep.svg`; se embebe en PNG porque pdfkit no rasteriza SVG. A 256px sobre un recuadro de 44pt son ~419 dpi (de sobra para impresión) y el PDF pesa 30 KB en vez de los 127 KB que costaba a 512px. Si el archivo faltara, el reporte se genera igual sin el sello: un cierre contable no puede depender de un elemento decorativo.
 - **`GET /categorias/:id/uso` — verificación previa al borrado** (solo Tesorero): informa si la categoría ya forma parte del histórico antes de confirmar. Usa `SELECT 1 ... LIMIT 1` sobre `idx_transacciones_categoria`, por lo que no cuenta ni recorre todos los movimientos. El `DELETE` conserva una segunda verificación de integridad por si se registra una transacción entre el aviso y la confirmación.
