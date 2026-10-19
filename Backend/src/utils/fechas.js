@@ -2,6 +2,46 @@
 // la BD guarda UTC; los límites de mes y el formato de salida usan la
 // zona configurada en LOCAL_TIMEZONE. Centralizado aquí, no en clientes.
 const env = require('../config/env');
+const { AppError } = require('./errors');
+
+/** Día calendario estricto: evita que JavaScript normalice 31 de febrero. */
+function esFechaCalendario(fecha) {
+  if (typeof fecha !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(fecha)) return false;
+  const valor = new Date(`${fecha}T00:00:00Z`);
+  return Number.isFinite(valor.getTime()) && valor.toISOString().slice(0, 10) === fecha
+    && Number(fecha.slice(0, 4)) >= 1000;
+}
+
+function fechaLocalISO(fechaUtc, tz = env.localTimezone) {
+  const { anio, mes, dia } = partesLocales(fechaUtc, tz);
+  return `${anio}-${String(mes).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+}
+
+// Representación nominal de la hora local, independiente de la zona del servidor.
+function instanteLocalNominal(fecha, tz) {
+  const partes = new Intl.DateTimeFormat('en-CA', {
+    timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23',
+  }).formatToParts(fecha).reduce((acc, p) => ({ ...acc, [p.type]: p.value }), {});
+  return Date.parse(`${partes.year}-${partes.month}-${partes.day}T${partes.hour}:${partes.minute}:${partes.second}Z`);
+}
+
+/** Cambia solamente el día local; conserva la hora y resuelve el desfase del día destino. */
+function cambiarDiaLocal(fechaUtc, fecha, tz = env.localTimezone) {
+  if (!esFechaCalendario(fecha)) {
+    throw new AppError('La fecha debe ser un día válido en formato AAAA-MM-DD', 400, 'INVALID_DATE');
+  }
+  const original = new Date(fechaUtc);
+  const hora = new Date(instanteLocalNominal(original, tz)).toISOString().slice(11, 19);
+  const nominal = Date.parse(`${fecha}T${hora}Z`);
+  let candidato = nominal;
+  for (let i = 0; i < 4; i += 1) {
+    const diferencia = nominal - instanteLocalNominal(new Date(candidato), tz);
+    if (diferencia === 0) return new Date(candidato);
+    candidato += diferencia;
+  }
+  throw new AppError('La hora original no existe en ese día por el cambio de horario; elige otra fecha', 400, 'INVALID_LOCAL_TIME');
+}
 
 // Desfase (ms) de una zona horaria respecto a UTC en una fecha dada
 function offsetMs(fechaUtc, tz) {
@@ -64,6 +104,9 @@ function formatoFechaCorta(fechaUtc, tz = env.localTimezone) {
 }
 
 module.exports = {
+  esFechaCalendario,
+  fechaLocalISO,
+  cambiarDiaLocal,
   rangoMesLocal,
   formatoLocal,
   nombreMes,

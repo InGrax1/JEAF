@@ -41,7 +41,10 @@
           "conciliada": { "type": "integer", "enum": [0, 1] },
           "idempotency_key": { "type": "string" },
           "origen": { "type": "string", "enum": ["ios_shortcut", "panel_web"] },
-          "fecha_transaccion": { "type": "string", "format": "date-time", "description": "UTC" }
+          "fecha_transaccion": { "type": "string", "format": "date-time", "description": "Fecha del movimiento en UTC; puede corregirse manualmente con auditoría" },
+          "fecha_local": { "type": "string", "format": "date", "description": "Día del movimiento en LOCAL_TIMEZONE; incluido en el listado y al cambiar fecha" },
+          "fecha_transaccion_local": { "type": "string", "description": "Fecha y hora formateadas por el servidor en LOCAL_TIMEZONE; incluidas en el listado y al cambiar fecha" },
+          "created_at": { "type": "string", "format": "date-time", "description": "Fecha original de captura en UTC; no cambia al corregir el movimiento" }
         }
       },
       "CrearTransaccion": {
@@ -190,7 +193,7 @@
           { "name": "page", "in": "query", "schema": { "type": "integer", "minimum": 1, "default": 1 } },
           { "name": "limit", "in": "query", "schema": { "type": "integer", "minimum": 1, "maximum": 100, "default": 20 } }
         ],
-        "responses": { "200": { "description": "items, total, page, limit" }, "403": { "description": "Rol sin permiso" } }
+        "responses": { "200": { "description": "items, total, page, limit, hoy_local (AAAA-MM-DD en la zona de la iglesia). Cada item incluye fecha_local y fecha_transaccion_local." }, "403": { "description": "Rol sin permiso" } }
       }
     },
     "/transacciones/{id}": {
@@ -211,6 +214,33 @@
         "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
         "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["motivo"], "properties": { "motivo": { "type": "string", "minLength": 5, "maxLength": 255 } } } } } },
         "responses": { "200": { "description": "Cancelada" }, "409": { "description": "Ya estaba cancelada" } }
+      }
+    },
+    "/transacciones/{id}/cambiar-fecha": {
+      "post": {
+        "tags": ["Transacciones"],
+        "summary": "Corregir manualmente el día de un movimiento (solo Tesorero)",
+        "description": "Solo JWT de super_admin; no admite API Keys. Recibe un día calendario de la iglesia, hasta hoy inclusive, y conserva la hora local. Solo transacciones activas. Mantiene created_at, monto, categoría e idempotency_key. Bloquea la fila y registra fecha anterior, fecha nueva, motivo, usuario e IP en la misma transacción SQL. Un reintento con el mismo día no crea otra auditoría. Los reportes nuevos reflejan la corrección; los archivos ya descargados deben generarse nuevamente. No modifica otros movimientos del mismo día.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": {
+            "type": "object", "additionalProperties": false, "required": ["fecha", "motivo"],
+            "properties": {
+              "fecha": { "type": "string", "format": "date", "example": "2026-09-30", "description": "AAAA-MM-DD, día válido en LOCAL_TIMEZONE, sin hora ni conversión del cliente" },
+              "motivo": { "type": "string", "minLength": 5, "maxLength": 255, "example": "La ofrenda del domingo se capturó el lunes", "description": "Se eliminan espacios al inicio y al final antes de validar" }
+            }
+          } } }
+        },
+        "responses": {
+          "200": { "description": "Transacción corregida", "content": { "application/json": { "schema": { "type": "object", "properties": { "ok": { "type": "boolean", "example": true }, "data": { "$ref": "#/components/schemas/Transaccion" } } } } } },
+          "400": { "description": "Datos inválidos, día futuro o una hora local inexistente por cambio de horario" },
+          "401": { "description": "JWT requerido o inválido" },
+          "403": { "description": "Rol sin permiso" },
+          "404": { "description": "Transacción no encontrada" },
+          "409": { "description": "La transacción está cancelada" }
+        }
       }
     },
     "/transacciones/{id}/conciliar": {

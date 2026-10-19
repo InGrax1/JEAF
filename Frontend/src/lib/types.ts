@@ -36,10 +36,13 @@ export interface Transaccion {
   conciliada_at: string | null;
   origen: 'ios_shortcut' | 'panel_web';
   fecha_transaccion: string;
+  fecha_local?: string; // AAAA-MM-DD calculada por el backend en la zona de la iglesia
+  fecha_transaccion_local?: string;
   created_at: string;
 }
 
 export interface ListaTransacciones {
+  hoy_local: string;
   items: Transaccion[];
   total: number;
   page: number;

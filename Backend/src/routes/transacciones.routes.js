@@ -9,6 +9,7 @@ const {
   crearTransaccionSchema,
   cancelarTransaccionSchema,
   conciliarTransaccionSchema,
+  cambiarFechaTransaccionSchema,
   listarTransaccionesQuerySchema,
   idParamSchema,
 } = require('../validators/schemas');
@@ -57,6 +58,16 @@ router.post(
   validate(idParamSchema, 'params'),
   validate(conciliarTransaccionSchema),
   transaccionesController.conciliar
+);
+
+// Corrección excepcional de fecha: únicamente el Tesorero desde el panel.
+router.post(
+  '/:id/cambiar-fecha',
+  authJwt,
+  permitir('super_admin'),
+  validate(idParamSchema, 'params'),
+  validate(cambiarFechaTransaccionSchema),
+  transaccionesController.cambiarFecha
 );
 
 module.exports = router;

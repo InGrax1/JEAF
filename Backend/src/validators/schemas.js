@@ -1,6 +1,7 @@
 // Esquemas Joi centralizados. Estrictos: rechazan textos en campos numéricos
 // y campos desconocidos para prevenir inyecciones (sección 7.2).
 const Joi = require('joi');
+const { esFechaCalendario } = require('../utils/fechas');
 
 const uuid = Joi.string().uuid({ version: 'uuidv4' }).required();
 
@@ -68,6 +69,13 @@ const conciliarTransaccionSchema = Joi.object({
   conciliada: Joi.boolean().required(),
 }).unknown(false);
 
+const cambiarFechaTransaccionSchema = Joi.object({
+  fecha: Joi.string().custom((valor, helpers) => (
+    esFechaCalendario(valor) ? valor : helpers.error('any.invalid')
+  )).required().messages({ 'any.invalid': '"fecha" debe ser un día válido en formato AAAA-MM-DD' }),
+  motivo: Joi.string().trim().min(5).max(255).required(),
+}).unknown(false);
+
 const listarTransaccionesQuerySchema = Joi.object({
   fechaDesde: Joi.date().iso(),
   fechaHasta: Joi.date().iso().min(Joi.ref('fechaDesde')),
@@ -113,6 +121,7 @@ module.exports = {
   crearTransaccionSchema,
   cancelarTransaccionSchema,
   conciliarTransaccionSchema,
+  cambiarFechaTransaccionSchema,
   listarTransaccionesQuerySchema,
   crearCategoriaSchema,
   actualizarCategoriaSchema,

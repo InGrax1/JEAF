@@ -32,6 +32,12 @@ export default function TransaccionesPage() {
   const [aCancelar, setACancelar] = useState<Transaccion | null>(null);
   const [motivo, setMotivo] = useState('');
   const [procesando, setProcesando] = useState(false);
+  const [aCambiarFecha, setACambiarFecha] = useState<Transaccion | null>(null);
+  const [fechaNueva, setFechaNueva] = useState('');
+  const [motivoFecha, setMotivoFecha] = useState('');
+  const [errorFecha, setErrorFecha] = useState('');
+  const [guardandoFecha, setGuardandoFecha] = useState(false);
+  const [aviso, setAviso] = useState('');
 
   const cargar = useCallback(async () => {
     setError('');
@@ -101,6 +107,34 @@ export default function TransaccionesPage() {
 
   const totalPaginas = datos ? Math.max(1, Math.ceil(datos.total / datos.limit)) : 1;
 
+  function abrirCambioFecha(tx: Transaccion) {
+    setACambiarFecha(tx);
+    setFechaNueva(tx.fecha_local ?? '');
+    setMotivoFecha('');
+    setErrorFecha('');
+    setAviso('');
+  }
+
+  async function guardarFecha(e: FormEvent) {
+    e.preventDefault();
+    if (!aCambiarFecha || guardandoFecha) return;
+    setGuardandoFecha(true);
+    setErrorFecha('');
+    try {
+      const actualizada = await api<Transaccion>(`/transacciones/${aCambiarFecha.id}/cambiar-fecha`, {
+        method: 'POST',
+        body: JSON.stringify({ fecha: fechaNueva, motivo: motivoFecha.trim() }),
+      });
+      setACambiarFecha(null);
+      setAviso(`Fecha del folio ${folioDe(actualizada.id)} actualizada a ${actualizada.fecha_transaccion_local}. Vuelve a descargar los reportes de los meses afectados.`);
+      await cargar();
+    } catch (e) {
+      setErrorFecha(e instanceof Error ? e.message : 'No se pudo cambiar la fecha');
+    } finally {
+      setGuardandoFecha(false);
+    }
+  }
+
   return (
     <div className="space-y-4">
       <h2 className="text-headline-lg text-on-surface">Transacciones</h2>
@@ -158,6 +192,11 @@ export default function TransaccionesPage() {
       </Card>
 
       {error && <MensajeError mensaje={error} />}
+      {aviso && (
+        <p role="status" className="rounded-lg border border-secondary/30 bg-secondary-container/30 px-4 py-3 text-sm text-on-secondary-container">
+          {aviso}
+        </p>
+      )}
 
       <Card className="overflow-x-auto p-0">
         {!datos ? (
@@ -194,7 +233,7 @@ export default function TransaccionesPage() {
                   transition={{ duration: 0.2, delay: Math.min(i, 12) * 0.025 }}
                   className={`border-b border-outline-variant last:border-0 hover:bg-surface-container-low ${tx.estado === 'cancelada' ? 'bg-surface-container-low text-on-surface-variant' : ''}`}
                 >
-                  <td className="whitespace-nowrap px-4 py-2">{formatoFecha(tx.fecha_transaccion)}</td>
+                  <td className="whitespace-nowrap px-4 py-2">{tx.fecha_transaccion_local ?? formatoFecha(tx.fecha_transaccion)}</td>
                   <td className="px-4 py-2 font-mono text-xs">{folioDe(tx.id)}</td>
                   <td className="px-4 py-2"><BadgeTipo tipo={tx.tipo} /></td>
                   <td className="px-4 py-2">{tx.categoria}</td>
@@ -220,12 +259,23 @@ export default function TransaccionesPage() {
                   {esAdmin && (
                     <td className="px-4 py-2 text-right">
                       {tx.estado === 'activa' && (
-                        <button
-                          onClick={() => { setACancelar(tx); setMotivo(''); }}
-                          className="text-xs font-semibold text-error hover:underline"
-                        >
-                          Cancelar
-                        </button>
+                        <div className="flex items-center justify-end gap-3 whitespace-nowrap">
+                          {tx.fecha_local && (
+                            <button
+                              onClick={() => abrirCambioFecha(tx)}
+                              className="min-h-11 text-xs font-semibold text-primary hover:underline"
+                              aria-label={`Cambiar fecha del folio ${folioDe(tx.id)}`}
+                            >
+                              Cambiar fecha
+                            </button>
+                          )}
+                          <button
+                            onClick={() => { setACancelar(tx); setMotivo(''); }}
+                            className="text-xs font-semibold text-error hover:underline"
+                          >
+                            Cancelar
+                          </button>
+                        </div>
                       )}
                     </td>
                   )}
@@ -245,6 +295,44 @@ export default function TransaccionesPage() {
           </div>
         </div>
       )}
+
+      <Modal titulo="Cambiar fecha" abierto={aCambiarFecha !== null} onCerrar={() => { if (!guardandoFecha) setACambiarFecha(null); }}>
+        {aCambiarFecha && (
+          <form onSubmit={guardarFecha} className="space-y-4">
+            <p className="text-sm text-on-surface-variant">
+              Folio <strong className="font-mono text-on-surface">{folioDe(aCambiarFecha.id)}</strong> — {formatoMoneda(aCambiarFecha.monto)} ({aCambiarFecha.categoria}).
+              <br />
+              Fecha actual: <strong>{aCambiarFecha.fecha_transaccion_local}</strong>.
+            </p>
+            <p id="ayuda-fecha" className="text-sm text-on-surface-variant">
+              Selecciona el día en que ocurrió el movimiento, según la fecha local de la iglesia.
+              Se conservará la hora y el cambio quedará en el historial de auditoría.
+              El movimiento se incluirá en el día y mes elegidos al generar los reportes.
+            </p>
+            <div>
+              <label htmlFor="fecha-movimiento" className="mb-1 block text-sm font-medium text-on-surface">Fecha correcta</label>
+              <input id="fecha-movimiento" type="date" required min="1000-01-01" max={datos?.hoy_local}
+                value={fechaNueva} onChange={(e) => setFechaNueva(e.target.value)}
+                disabled={guardandoFecha} aria-describedby="ayuda-fecha" className={inputCls} />
+            </div>
+            <div>
+              <label htmlFor="motivo-fecha" className="mb-1 block text-sm font-medium text-on-surface">Motivo del cambio (obligatorio)</label>
+              <textarea id="motivo-fecha" required minLength={5} maxLength={255} rows={3}
+                value={motivoFecha} onChange={(e) => setMotivoFecha(e.target.value)}
+                disabled={guardandoFecha} className={inputCls}
+                placeholder="Ej. La ofrenda del domingo se registró el lunes" />
+            </div>
+            {errorFecha && <MensajeError mensaje={errorFecha} />}
+            <div className="flex justify-end gap-2">
+              <button type="button" className={btnSecundario} disabled={guardandoFecha} onClick={() => setACambiarFecha(null)}>Volver</button>
+              <button type="submit" className={btnPrimario}
+                disabled={guardandoFecha || !fechaNueva || fechaNueva === aCambiarFecha.fecha_local || motivoFecha.trim().length < 5}>
+                {guardandoFecha ? 'Guardando…' : 'Guardar fecha'}
+              </button>
+            </div>
+          </form>
+        )}
+      </Modal>
 
       <Modal titulo="Cancelar transacción" abierto={aCancelar !== null} onCerrar={() => setACancelar(null)}>
         {aCancelar && (

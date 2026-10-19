@@ -1,7 +1,7 @@
 // Pruebas de INTEGRACIÓN (spec 10.6): repositories/ contra una base de datos
 // MySQL real (jeaf_test), no mocks. Crea el esquema completo antes de correr
 // y elimina la base al terminar. Ejecutar con: npm run test:int
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
 import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -23,6 +23,10 @@ const transaccionesRepository = require('../../src/repositories/transacciones.re
 const apiKeysRepository = require('../../src/repositories/apiKeys.repository');
 const logsRepository = require('../../src/repositories/logs.repository');
 const codigosRecuperacionRepository = require('../../src/repositories/codigosRecuperacion.repository');
+const transaccionesService = require('../../src/services/transacciones.service');
+const reportesRepository = require('../../src/repositories/reportes.repository');
+const auditService = require('../../src/services/audit.service');
+const { rangoMesLocal, fechaLocalISO } = require('../../src/utils/fechas');
 
 const ROL_ID = 'a0000000-0000-4000-8000-000000000001';
 const USUARIO_ID = 'b0000000-0000-4000-8000-000000000001';
@@ -83,6 +87,44 @@ function txBase(extra = {}) {
 }
 
 describe('transacciones.repository (MySQL real)', () => {
+  it('corregir fecha mueve solo el registro elegido de mes y conserva captura, monto e idempotencia', async () => {
+    const tx = txBase();
+    const otra = txBase();
+    for (const registro of [tx, otra]) {
+      await transaccionesRepository.insert(registro);
+      await transaccionesRepository.cambiarFecha(registro.id, new Date('2025-02-01T18:00:00Z'));
+    }
+    const antes = await transaccionesRepository.findById(tx.id);
+    await transaccionesService.cambiarFecha(tx.id, { fecha: '2025-01-31', motivo: 'Captura tardía de enero' }, { usuarioId: USUARIO_ID, ip: '127.0.0.1', origen: 'panel_web' });
+    const despues = await transaccionesRepository.findById(tx.id);
+    expect(despues.created_at).toEqual(antes.created_at);
+    expect(despues.monto).toBe(antes.monto);
+    expect((await transaccionesRepository.findByIdempotencyKey(tx.idempotencyKey)).id).toBe(tx.id);
+    expect(fechaLocalISO((await transaccionesRepository.findById(otra.id)).fecha_transaccion)).toBe('2025-02-01');
+    const enero = rangoMesLocal(2025, 1);
+    const febrero = rangoMesLocal(2025, 2);
+    const filasEnero = await reportesRepository.transaccionesDelPeriodo(enero.desde, enero.hasta);
+    const filasFebrero = await reportesRepository.transaccionesDelPeriodo(febrero.desde, febrero.hasta);
+    expect(filasEnero.some((fila) => fila.id === tx.id)).toBe(true);
+    expect(filasFebrero.some((fila) => fila.id === tx.id)).toBe(false);
+    expect(filasFebrero.some((fila) => fila.id === otra.id)).toBe(true);
+    expect(await logsRepository.findByRegistro('transacciones', tx.id)).toHaveLength(1);
+  });
+
+  it('revierte la fecha si falla la auditoría', async () => {
+    const tx = txBase();
+    await transaccionesRepository.insert(tx);
+    const antes = await transaccionesRepository.findById(tx.id);
+    const fallo = vi.spyOn(auditService, 'registrar').mockRejectedValue(new Error('Auditoría no disponible'));
+    try {
+      await expect(transaccionesService.cambiarFecha(tx.id, { fecha: '2025-01-30', motivo: 'Captura tardía' }, { usuarioId: USUARIO_ID, ip: '127.0.0.1', origen: 'panel_web' })).rejects.toThrow('Auditoría no disponible');
+    } finally {
+      fallo.mockRestore();
+    }
+    expect((await transaccionesRepository.findById(tx.id)).fecha_transaccion).toEqual(antes.fecha_transaccion);
+    expect(await logsRepository.findByRegistro('transacciones', tx.id)).toHaveLength(0);
+  });
+
   it('inserta y recupera con joins de categoría y capturista', async () => {
     const tx = txBase();
     await transaccionesRepository.insert(tx);

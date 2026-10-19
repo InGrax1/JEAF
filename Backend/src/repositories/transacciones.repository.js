@@ -27,6 +27,20 @@ async function findById(id, conn = pool) {
   return rows[0] || null;
 }
 
+// Bloqueo dentro de withTransaction: la auditoría toma el estado vigente.
+async function findByIdParaActualizar(id, conn = pool) {
+  const [rows] = await conn.query('SELECT * FROM transacciones WHERE id = ? FOR UPDATE', [id]);
+  return rows[0] || null;
+}
+
+async function cambiarFecha(id, fecha, conn = pool) {
+  await conn.query(
+    `UPDATE transacciones SET fecha_transaccion = ?, updated_at = UTC_TIMESTAMP()
+     WHERE id = ? AND estado = 'activa'`,
+    [fecha, id]
+  );
+}
+
 async function findByIdempotencyKey(key, conn = pool) {
   const [rows] = await conn.query(`${SELECT_BASE} WHERE t.idempotency_key = ?`, [key]);
   return rows[0] || null;
@@ -100,4 +114,5 @@ async function existePorCategoria(categoriaId, conn = pool) {
 module.exports = {
   insert, findById, findByIdempotencyKey, list, cancelar, setConciliada,
   existePorCategoria,
+  findByIdParaActualizar, cambiarFecha,
 };

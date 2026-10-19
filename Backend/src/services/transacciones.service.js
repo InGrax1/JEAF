@@ -9,6 +9,15 @@ const transaccionesRepository = require('../repositories/transacciones.repositor
 const categoriasRepository = require('../repositories/categorias.repository');
 const auditService = require('./audit.service');
 const { AppError } = require('../utils/errors');
+const { fechaLocalISO, formatoLocal, cambiarDiaLocal } = require('../utils/fechas');
+
+function conFechaLocal(tx) {
+  return {
+    ...tx,
+    fecha_local: fechaLocalISO(tx.fecha_transaccion),
+    fecha_transaccion_local: formatoLocal(tx.fecha_transaccion),
+  };
+}
 
 // Folio corto para la notificación del Atajo (spec 10.5): últimos 6 chars del UUID
 function folioDe(id) {
@@ -71,13 +80,39 @@ async function crear({ tipo, monto, categoriaId, notas, idempotencyKey }, contex
 }
 
 async function listar(filtros) {
-  return transaccionesRepository.list(filtros);
+  const lista = await transaccionesRepository.list(filtros);
+  return { ...lista, items: lista.items.map(conFechaLocal), hoy_local: fechaLocalISO(new Date()) };
 }
 
 async function obtener(id) {
   const tx = await transaccionesRepository.findById(id);
   if (!tx) throw new AppError('Transacción no encontrada', 404, 'TRANSACTION_NOT_FOUND');
   return tx;
+}
+
+async function cambiarFecha(id, { fecha, motivo }, contexto) {
+  return db.withTransaction(async (conn) => {
+    const anterior = await transaccionesRepository.findByIdParaActualizar(id, conn);
+    if (!anterior) throw new AppError('Transacción no encontrada', 404, 'TRANSACTION_NOT_FOUND');
+    if (anterior.estado === 'cancelada') {
+      throw new AppError('No se puede cambiar la fecha de una transacción cancelada', 409, 'CANCELLED_TRANSACTION');
+    }
+    const nuevaFecha = cambiarDiaLocal(anterior.fecha_transaccion, fecha);
+    if (fecha > fechaLocalISO(new Date())) {
+      throw new AppError('La fecha no puede ser posterior al día de hoy en la iglesia', 400, 'FUTURE_DATE');
+    }
+    // Un reintento con el mismo día no genera otra corrección ni otro log.
+    if (fecha !== fechaLocalISO(anterior.fecha_transaccion)) {
+      await transaccionesRepository.cambiarFecha(id, nuevaFecha, conn);
+      await auditService.registrar({
+        tabla: 'transacciones', registroId: id, accion: 'UPDATE',
+        estadoAnterior: { fecha_transaccion: anterior.fecha_transaccion, fecha_local: fechaLocalISO(anterior.fecha_transaccion) },
+        estadoNuevo: { fecha_transaccion: nuevaFecha, fecha_local: fecha, motivo_cambio_fecha: motivo, origen: contexto.origen },
+        usuarioId: contexto.usuarioId, ipAddress: contexto.ip,
+      }, conn);
+    }
+    return conFechaLocal(await transaccionesRepository.findById(id, conn));
+  });
 }
 
 async function cancelar(id, { motivo }, contexto) {
@@ -130,4 +165,4 @@ async function conciliar(id, { conciliada }, contexto) {
   return transaccionesRepository.findById(id);
 }
 
-module.exports = { crear, listar, obtener, cancelar, conciliar, folioDe };
+module.exports = { crear, listar, obtener, cancelar, conciliar, cambiarFecha, folioDe };

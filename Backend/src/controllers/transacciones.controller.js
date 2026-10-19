@@ -58,4 +58,13 @@ async function conciliar(req, res, next) {
   }
 }
 
-module.exports = { crear, listar, obtener, cancelar, conciliar };
+async function cambiarFecha(req, res, next) {
+  try {
+    const tx = await transaccionesService.cambiarFecha(req.params.id, req.body, contextoDe(req));
+    res.json({ ok: true, data: tx });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { crear, listar, obtener, cancelar, conciliar, cambiarFecha };
